@@ -17,7 +17,7 @@
  * USA.
  */
 
-package com.la.radarhost.comlib.usbserial.driver;
+package com.la.radarhost.comlib.comport.driver;
 
 /**
  * Generic unchecked exception for the usbserial package.

@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int idProduct = 88;
 
     private PendingIntent pi;
+    private final String TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,11 +64,13 @@ public class MainActivity extends AppCompatActivity {
                     connBtn.setText("Disconnected");
                 } else {
                     usbDeviceConnection = connect();
-                    Protocol protocol = new Protocol(usbDevice, usbDeviceConnection);
-                    int connStatus = protocol.connect();
-                    Log.d("MainActivity","protocol error code: " + connStatus);
-                    protocol.disconnect();
-                    isConnected = true;
+//                    Protocol protocol = new Protocol(usbDevice, usbDeviceConnection);
+//                    int connStatus = protocol.connect();
+//                    Log.d(TAG,"protocol error code: " + connStatus);
+//                    protocol.disconnect();
+//                    isConnected = true;
+
+
                     connBtn.setText("Connected");
                 }
             }
@@ -111,38 +114,38 @@ public class MainActivity extends AppCompatActivity {
 
         if (usbDevice == null) {
             msgView.append("[INFO]: No target device found.\n");
-            Log.d("MainActi.init", "No target device found.");
+            Log.d(TAG, "No target device found.");
             isConnected = false;
             connBtn.setText("Disconnected");
             return null;
 
         } else {
-            Log.d("MainActi.init", "Target device found.");
+            Log.d(TAG, "Target device found.");
         }
 
         /* Require permission of the device. */
         if (!usbManager.hasPermission(usbDevice)) {
-            Log.d("MainActi.init", "No permission to the device");
+            Log.d(TAG, "No permission to the device");
             usbManager.requestPermission(usbDevice, pi);
         }
 
         if (usbManager.hasPermission(usbDevice)) {
-            Log.d("MainActi.init", "Permission obtained.");
+            Log.d(TAG, "Permission obtained.");
         } else {
-            Log.d("MainActi.init", "Permission acquisition failed.");
+            Log.d(TAG, "Permission acquisition failed.");
             return null;
         }
 
         /* Open the device. */
         deviceConnection = usbManager.openDevice(usbDevice);
         if (deviceConnection == null) {
-            Log.d("MainActi.init", "Connection establish failed.");
+            Log.d(TAG, "Connection establish failed.");
             isConnected = false;
             connBtn.setText("Disconnected");
             return null;
 
         } else {
-            Log.d("MainActi.init", "Connection establish succeed.");
+            Log.d(TAG, "Connection establish succeed.");
         }
 
         isConnected = true;
@@ -162,10 +165,10 @@ public class MainActivity extends AppCompatActivity {
 
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if (device != null) {
-                            Log.d("MainActi.usbR", "Permission got.");
+                            Log.d(TAG, "Permission got.");
                         }
                     } else {
-                        Log.d("MainActi.usbR", "Permission denied for device.");
+                        Log.d(TAG, "Permission denied for device.");
                     }
                 }
             }
