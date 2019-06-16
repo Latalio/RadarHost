@@ -22,17 +22,20 @@ import static com.la.radarhost.comlib.comport.driver.UsbSerialConstant.USB_RT_AC
 public class UsbSerialPort {
     private final String TAG = UsbSerialPort.class.getSimpleName();
 
-    private UsbDevice mDevice = null;
+    private UsbDevice mDevice;
+    private UsbSerialDriver mDriver;
+
     private UsbDeviceConnection mConnection = null;
 
 
-    private static final int DEFAULT_READ_BUFFER_SIZE = 16 * 1024;
-    private static final int DEFAULT_WRITE_BUFFER_SIZE = 16 * 1024;
 
-    private int mPortNumber = -1;
+
+    private int mPortNum;
     // non-null when open()
 
     /** Internal read buffer.  Guarded by {@link #mReadBufferLock}. */
+    private static final int DEFAULT_READ_BUFFER_SIZE = 16 * 1024;
+    private static final int DEFAULT_WRITE_BUFFER_SIZE = 16 * 1024;
     private byte[] mReadBuffer;
     private byte[] mWriteBuffer;
 
@@ -47,7 +50,11 @@ public class UsbSerialPort {
     private UsbEndpoint mReadEndpoint;
     private UsbEndpoint mWriteEndpoint;
 
-    UsbSerialPort() {
+    UsbSerialPort(UsbSerialDriver driver) {
+        mDriver = driver;
+        mDevice = mDriver.getDevice();
+        mPortNum = mDriver.getPortNum(this);
+
         mReadBuffer = new byte[DEFAULT_READ_BUFFER_SIZE];
         mWriteBuffer = new byte[DEFAULT_WRITE_BUFFER_SIZE];
     }
@@ -56,31 +63,18 @@ public class UsbSerialPort {
      * Internal Functions
      *****************************************************/
     private void openInterface() throws IOException {
-        Log.d(TAG, "claiming interfaces, count=" + mDevice.getInterfaceCount());
-
         mControlInterface = mDevice.getInterface(0);
-        Log.d(TAG, "Control iface=" + mControlInterface);
-        // class should be USB_CLASS_COMM
-
         if (!mConnection.claimInterface(mControlInterface, true)) {
             throw new IOException("Could not claim control interface.");
         }
-
         mControlEndpoint = mControlInterface.getEndpoint(0);
-        Log.d(TAG, "Control endpoint direction: " + mControlEndpoint.getDirection());
 
-        Log.d(TAG, "Claiming data interface.");
         mDataInterface = mDevice.getInterface(1);
-        Log.d(TAG, "data iface=" + mDataInterface);
-        // class should be USB_CLASS_CDC_DATA
-
         if (!mConnection.claimInterface(mDataInterface, true)) {
             throw new IOException("Could not claim data interface.");
         }
         mReadEndpoint = mDataInterface.getEndpoint(1);
-        Log.d(TAG, "Read endpoint direction: " + mReadEndpoint.getDirection());
         mWriteEndpoint = mDataInterface.getEndpoint(0);
-        Log.d(TAG, "Write endpoint direction: " + mWriteEndpoint.getDirection());
     }
 
     private int sendAcmControlMessage(int request, int value, byte[] buf) {
@@ -88,35 +82,38 @@ public class UsbSerialPort {
                 USB_RT_ACM, request, value, 0, buf, buf != null ? buf.length : 0, 5000);
     }
 
-    /*****************************************************
-     * External Functions
-     *****************************************************/
-    public void open() throws IOException {
-        if (mConnection != null) {
-            throw new IOException("Already open");
-        }
 
-        boolean opened = false;
+    /**
+     * 在USB层建立*连接*，获取*输入*\*输出*，*控制*端点
+     * @throws IOException
+     */
+    public void open() throws IOException {
+        if (mConnection != null) throw new IOException("Already open");
+
+        mConnection = mDriver.requestConnection();
+        if (mConnection == null) throw new IOException("Connection failed");
+
         try {
             openInterface();
-            opened = true;
-        } finally {
-            if (!opened) {
-                mConnection = null;
-                // just to be on the save side
-                mControlEndpoint = null;
-                mReadEndpoint = null;
-                mWriteEndpoint = null;
-            }
+        } catch (IOException e) {
+            mConnection = null;
+            mControlEndpoint = null;
+            mReadEndpoint = null;
+            mWriteEndpoint = null;
         }
     }
 
+    /**
+     * 在USB层关闭*连接*，重置*输入*\*输出*，*控制*端点
+     * @throws IOException
+     */
     public void close() throws IOException {
-        if (mConnection == null) {
-            throw new IOException("Already closed");
-        }
+        if (mConnection == null) throw new IOException("Already closed");
         mConnection.close();
         mConnection = null;
+        mControlEndpoint = null;
+        mReadEndpoint = null;
+        mWriteEndpoint = null;
     }
 
     public int read(byte[] dest, int timeoutMillis) throws IOException {
@@ -205,19 +202,7 @@ public class UsbSerialPort {
         sendAcmControlMessage(SET_LINE_CODING, 0, msg);
     }
 
-    /*****************************************************
-     * Getter and setter
-     *****************************************************/
-    public void setDevice(UsbDevice device) {
-        mDevice = device;
-    }
-    public void setConnection(UsbDeviceConnection connection) {
-        mConnection = connection;
-    }
-    public void setPortNumber(int portNumber) {
-        mPortNumber = portNumber;
-    }
     public int getPortNumber() {
-        return mPortNumber;
+        return mPortNum;
     }
 }

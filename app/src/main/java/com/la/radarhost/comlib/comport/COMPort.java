@@ -5,28 +5,22 @@ import android.util.Log;
 import com.la.radarhost.comlib.comport.driver.UsbSerialConstant;
 import com.la.radarhost.comlib.comport.driver.UsbSerialDriver;
 import com.la.radarhost.comlib.comport.driver.UsbSerialPort;
+import com.la.radarhost.comlib.comport.util.HexDump;
 
 import java.io.IOException;
 
 public class COMPort {
     private final String TAG = COMPort.class.getSimpleName();
 
-    private UsbSerialDriver mDriver;
     private UsbSerialPort mPort;
-    private int mPortNum = -1;
 
-    private int timeout = 100;
+    private int timeout = 200;
 
-    // Must to initialize before other actions
-    public void initialize(UsbSerialDriver driver) {
-        mDriver = driver;
-        mPortNum = mDriver.request();
-        mPort = mDriver.getPorts().get(mPortNum);
+    public COMPort(UsbSerialDriver driver) {
+        int portNum = driver.requestPort();
+        mPort = driver.getPort(portNum);
     }
 
-    /*************************************
-    External Function
-    **************************************/
     public int open() {
         try {
             mPort.open();
@@ -43,7 +37,7 @@ public class COMPort {
             try {
                 mPort.close();
             } catch (IOException e2) {
-                //Ignore
+               e2.printStackTrace();
             }
         }
 
@@ -65,20 +59,18 @@ public class COMPort {
     public int sendData(byte[] data, int offset) {
         byte[] buffer = new byte[data.length-offset];
         System.arraycopy(data, offset, buffer, 0, buffer.length);
+
         int numSendBytes = 0;
         try {
             numSendBytes = mPort.write(buffer, timeout);
         } catch (IOException e) {
             e.printStackTrace();
             Log.d(TAG, "Send data failed.");
+            return 0;
         }
 
         Log.d(TAG, String.format("Send data succeed. [%d bytes]", numSendBytes));
         return numSendBytes;
-    }
-
-    public int sendData(byte[] data) {
-        return sendData(data,0);
     }
 
     public int getData(byte[] data, int offset) {
@@ -89,19 +81,16 @@ public class COMPort {
         } catch (IOException e) {
             e.printStackTrace();
             Log.d(TAG, "Get data failed.");
+            return 0;
         }
         System.arraycopy(buffer, 0, data, offset, buffer.length);
 
         Log.d(TAG, String.format("Get data succeed. [%d bytes]", numGetBytes));
+        Log.d(TAG, HexDump.toHexString(data));
         return numGetBytes;
-    }
-
-    public int getData(byte[] data) {
-        return getData(data,0);
     }
 
     public void setTimeout(int timeout) {
         this.timeout = timeout;
     }
-
 }

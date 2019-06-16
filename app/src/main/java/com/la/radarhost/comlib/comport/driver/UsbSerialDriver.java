@@ -26,33 +26,10 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
-import android.util.Log;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
-import static com.la.radarhost.comlib.comport.driver.UsbSerialConstant.PARITY_EVEN;
-import static com.la.radarhost.comlib.comport.driver.UsbSerialConstant.PARITY_MARK;
-import static com.la.radarhost.comlib.comport.driver.UsbSerialConstant.PARITY_NONE;
-import static com.la.radarhost.comlib.comport.driver.UsbSerialConstant.PARITY_ODD;
-import static com.la.radarhost.comlib.comport.driver.UsbSerialConstant.PARITY_SPACE;
-import static com.la.radarhost.comlib.comport.driver.UsbSerialConstant.SET_LINE_CODING;
-import static com.la.radarhost.comlib.comport.driver.UsbSerialConstant.STOPBITS_1;
-import static com.la.radarhost.comlib.comport.driver.UsbSerialConstant.STOPBITS_1_5;
-import static com.la.radarhost.comlib.comport.driver.UsbSerialConstant.STOPBITS_2;
-import static com.la.radarhost.comlib.comport.driver.UsbSerialConstant.USB_RT_ACM;
 
-/**
- * USB CDC/ACM serial driver implementation.
- *
- * @author mike wakerly (opensource@hoho.com)
- * @see <a
- *      href="http://www.usb.org/developers/devclass_docs/usbcdc11.pdf">Universal
- *      Serial Bus Class Definitions for Communication Devices, v1.1</a>
- */
 public class UsbSerialDriver {
 
     private final static String TAG = UsbSerialDriver.class.getSimpleName();
@@ -60,8 +37,11 @@ public class UsbSerialDriver {
     private final UsbManager mManager;
     private final UsbDevice mDevice;
 
+    private int mNumPorts = 0;
 
-    private PortTable portTable = new PortTable();
+
+    private final short PORTS_LENGTH = 8;
+    private UsbSerialPort[] ports = new UsbSerialPort[PORTS_LENGTH];
 
     /******************************
      Constructor
@@ -74,44 +54,63 @@ public class UsbSerialDriver {
     /******************************
      External Functions
      ******************************/
-    public int request() {
-        UsbSerialPort port = new UsbSerialPort();
+    public int requestPort() {
+        UsbSerialPort port = new UsbSerialPort(this);
+        if(isFull()) return -1;
 
-        int portNumber = portTable.add(port);
-        UsbDeviceConnection connection = buildConnection(); //maybe fail
-
-        port.setDevice(mDevice);
-        port.setConnection(connection);
-        port.setPortNumber(portNumber);
-
-        return portNumber;
+        mNumPorts += 1;
+        int portNum = search(null);
+        ports[portNum] = port;
+        return portNum;
     }
 
-    public void release(int portNumber) {
-        portTable.remove(portNumber);
+    public void releasePort(int portNum) {
+        try {
+            ports[portNum].close();
+        } catch (IOException e) {
+            // Ignore
+        } finally {
+            ports[portNum]= null;
+            mNumPorts -= 1;
+        }
     }
 
-    private UsbDeviceConnection buildConnection() {
+    UsbDeviceConnection requestConnection() {
         UsbDeviceConnection connection = null;
         if (mManager.hasPermission(mDevice)) {
             connection = mManager.openDevice(mDevice);
-        } else {
-            // to do
         }
         return connection;
     }
+
 
     public UsbDevice getDevice() {
         return mDevice;
     }
 
-    public PortTable getPorts() {
-        return portTable;
+    public UsbSerialPort getPort(int portNum) {
+        return ports[portNum];
     }
 
-    /******************************
-     Internal Class
-     ******************************/
+    public int getPortNum(UsbSerialPort port) {
+        return search(port);
+    }
+
+    // funcs to handle ports list
+
+    private int search(UsbSerialPort port) {
+        int i;
+        for (i=0;i<PORTS_LENGTH;i++) {
+            if(ports[i]==port) {
+                break;
+            }
+        }
+        return i;
+    }
+
+    private boolean isFull() {
+        return mNumPorts == PORTS_LENGTH;
+    }
 
 
 }

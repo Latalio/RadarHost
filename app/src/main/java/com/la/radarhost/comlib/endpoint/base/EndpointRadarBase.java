@@ -1,17 +1,15 @@
 package com.la.radarhost.comlib.endpoint.base;
 
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbEndpoint;
-
 import com.la.radarhost.comlib.endpoint.Endpoint;
-import com.la.radarhost.comlib.endpoint.EndpointDefinition;
 import com.la.radarhost.comlib.protocol.MessageInfo;
 import com.la.radarhost.comlib.protocol.Protocol;
+
+import java.util.HashMap;
 
 public class EndpointRadarBase extends Endpoint {
     /**
      * Command Codes
-     * Each payload message of the supported endpoint starts with one of these command codes.
+     * Each payload payload of the supported endpoint starts with one of these command codes.
      *
      */
     public static final byte MSG_FRAME_DATA             = 0x00;
@@ -34,27 +32,30 @@ public class EndpointRadarBase extends Endpoint {
     public static final byte MSG_GET_FRAME_FORMAT       = 0x40;
     public static final byte MSG_SET_FRAME_FORMAT       = 0x41;
 
-    @Override
-    public void parsePayload(MessageInfo messageInfo) {
+    public EndpointRadarBase() {
+        epNum = 1;
+        type = 0x52424153L;
+        minVersion = 1;
+        maxVersion = 1;
+        description = "ifxRadarBase";
+        commands = new HashMap<String, byte[]>();
+    }
 
+    @Override
+    public Object parsePayload(byte[] payload) {
+        return null;
     }
 
     private int parseFrameInfo() {
         return 0;
     }
 
-    /**
-    ==============================================================================
-     7. EXPORTED FUNCTIONS
-    ==============================================================================
-    */
+    public void setAutomaticFrameTrigger(long frameIntervalUs) {
+        byte[] cmd = new byte[5];
 
-    public int setAutomaticFrameTrigger(Protocol protocol, long frameIntervalUs) {
-        byte[] cmdMsg = new byte[5];
+        Protocol.writePayload(cmd, MSG_SET_AUTOMATIC_TRIGGER);
+        Protocol.writePayload(cmd,1,frameIntervalUs);
 
-        Protocol.writePayload(cmdMsg, MSG_SET_AUTOMATIC_TRIGGER);
-        Protocol.writePayload(cmdMsg,1,frameIntervalUs);
-
-        return protocol.sendAndReceive(this, cmdMsg);
+        commands.put("SET_AUTOMATIC_TRIGGER", cmd);
     }
 }
