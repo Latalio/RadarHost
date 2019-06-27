@@ -47,8 +47,8 @@ public class ProtocolWorker extends Thread{
             return;
         }
 
-        if (!mCmd.repetition) {
-            // Log.d(TAG, "<run>no repetition.");
+        if (!mCmd.repeat) {
+            // Log.d(TAG, "<run>no repeat.");
             mMsgPipe.addCommand(new CommandBytes(this, wrapPayload(cmdBytes)));
             step();
         } else {
@@ -81,7 +81,7 @@ public class ProtocolWorker extends Thread{
                     Log.d(TAG,"<step>received and payload is valid");
                     // Parse Received Msg and Send Message to UI Thread
                     Message msg = Message.obtain();
-                    msg.obj = mEndpoint.parsePayload(msgInfo.payload);
+                    mEndpoint.parsePayload(msgInfo.payload, msg);
                     mHandler.sendMessage(msg);
 
                     mState = PayloadState.not_received_yet;

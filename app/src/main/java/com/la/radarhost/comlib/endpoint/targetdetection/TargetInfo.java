@@ -36,4 +36,36 @@ public class TargetInfo {
         this.azimuth_speed = azimuth_speed;
         this.elevation_speed = elevation_speed;
     }
+
+    public int getTargetID() {
+        return targetID;
+    }
+
+    public float getLevel() {
+        return level;
+    }
+
+    public float getRadius() {
+        return radius;
+    }
+
+    public float getAzimuth() {
+        return azimuth;
+    }
+
+    public float getElevation() {
+        return elevation;
+    }
+
+    public float getRadial_speed() {
+        return radial_speed;
+    }
+
+    public float getAzimuth_speed() {
+        return azimuth_speed;
+    }
+
+    public float getElevation_speed() {
+        return elevation_speed;
+    }
 }

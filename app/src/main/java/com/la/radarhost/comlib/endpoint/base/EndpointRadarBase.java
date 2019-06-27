@@ -1,5 +1,7 @@
 package com.la.radarhost.comlib.endpoint.base;
 
+import android.os.Message;
+
 import com.la.radarhost.comlib.endpoint.Endpoint;
 import com.la.radarhost.comlib.protocol.MessageInfo;
 import com.la.radarhost.comlib.protocol.Protocol;
@@ -42,8 +44,8 @@ public class EndpointRadarBase extends Endpoint {
     }
 
     @Override
-    public Object parsePayload(byte[] payload) {
-        return null;
+    public void parsePayload(byte[] payload, Message msg) {
+        //todo
     }
 
     private int parseFrameInfo() {

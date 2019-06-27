@@ -1,5 +1,7 @@
 package com.la.radarhost.comlib.endpoint.zero;
 
+import android.os.Message;
+
 import com.la.radarhost.comlib.endpoint.Endpoint;
 import com.la.radarhost.comlib.protocol.MessageInfo;
 import com.la.radarhost.comlib.protocol.Protocol;
@@ -21,8 +23,8 @@ public class EndpointZero extends Endpoint {
         }};
     }
 
-    public Object parsePayload(byte[] payload) {
-        return null;
+    public void parsePayload(byte[] payload, Message msg) {
+
     }
 
 }

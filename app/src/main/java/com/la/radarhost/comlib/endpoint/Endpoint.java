@@ -1,5 +1,7 @@
 package com.la.radarhost.comlib.endpoint;
 
+import android.os.Message;
+
 import com.la.radarhost.comlib.protocol.MessageInfo;
 
 import java.util.Map;
@@ -14,7 +16,7 @@ public abstract class Endpoint {
 
     public Map<String, byte[]> commands;
 
-    public abstract Object parsePayload(byte[] payload);
+    public abstract void parsePayload(byte[] payload, Message msg);
 
     public static byte[] warpCommand(byte cmd) {
         byte[] cmdBytes = {cmd};

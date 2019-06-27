@@ -1,5 +1,8 @@
 package com.la.radarhost.comlib.endpoint.targetdetection;
 
+import android.os.Message;
+
+import com.la.radarhost.D2GRadar;
 import com.la.radarhost.comlib.endpoint.Endpoint;
 import com.la.radarhost.comlib.protocol.MessageInfo;
 import com.la.radarhost.comlib.protocol.Protocol;
@@ -34,22 +37,18 @@ public class EndpointTargetDetection extends Endpoint {
 
 
     @Override
-    public Object parsePayload(byte[] payload) {
-        Object obj;
+    public void parsePayload(byte[] payload, Message msg) {
         byte msgTag = (byte)Protocol.readPayload(payload,0,1);
         switch (msgTag) {
             case MSG_GET_TARGETS:
-                obj = parseTargetInfo(payload);
+                parseTargetInfo(payload, msg);
                 break;
             default:
-                obj = null;
+                break;
         }
-
-        return obj;
-
     }
 
-    private static Object parseTargetInfo(byte[] payload) {
+    private static void parseTargetInfo(byte[] payload, Message msg) {
         short numTargets = (short)Protocol.readPayload(payload,1,1);
         TargetInfo[] targets = new TargetInfo[numTargets];
 
@@ -81,28 +80,18 @@ public class EndpointTargetDetection extends Endpoint {
                 targets[i] = targetInfo;
             }
         }
-        StringBuilder str = new StringBuilder();
-        for (TargetInfo target : targets) {
-            str.append("ID: ");
-            str.append(target.targetID);
-            str.append("\n");
-            str.append("distance: ");
-            str.append(target.radius);
-            str.append("\n");
-            str.append("speed: ");
-            str.append(target.radial_speed);
-            str.append("\n");
-        }
-        return str.toString();
+        msg.what = D2GRadar.MT_GET_TARGETS;
+        msg.obj = targets;
     }
 
-    private boolean parseDSPSettings(byte[] payload) {
+    private void parseDSPSettings(byte[] payload, Message msg) {
+        //todo
 
-        return false;
     }
 
-    private boolean parseRangeThreshold(byte[] payload) {
-        return false;
+    private void parseRangeThreshold(byte[] payload, Message msg) {
+        //todo
+
     }
 
 }
