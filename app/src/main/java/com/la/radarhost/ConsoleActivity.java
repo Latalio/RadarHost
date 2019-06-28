@@ -1,5 +1,6 @@
 package com.la.radarhost;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -48,7 +49,11 @@ public class ConsoleActivity extends AppCompatActivity {
         mBtnTargets.setOnClickListener(new BtnTargetsListener());
 
         mSensor = new D2GRadar();
-        mSensor.connect(this);
+        if (!mSensor.connect(this)) {
+            Log.e(TAG, "mSensor connection failed.");
+            Intent intent = new Intent(this, NoDevActivity.class);
+            startActivity(intent);
+        }
 
         // things need to do here
         // 1.check device's existence
