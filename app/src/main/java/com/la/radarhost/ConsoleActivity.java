@@ -3,6 +3,7 @@ package com.la.radarhost;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +17,7 @@ import com.la.radarhost.comlib.endpoint.targetdetection.TargetInfo;
 
 public class ConsoleActivity extends AppCompatActivity {
     private final static String TAG = ConsoleActivity.class.getSimpleName();
+
 
     //todo extend the general Text to a specific one
     // view-about
@@ -37,7 +39,7 @@ public class ConsoleActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);//去掉标题栏
-        setContentView(R.layout.main_tparams);
+        setContentView(R.layout.main_dparams);
 
         mBtnRun = findViewById(R.id.btn_run);
         mBtnTargets = findViewById(R.id.btn_targets);
