@@ -14,12 +14,10 @@ import java.util.Queue;
 public class MessagePipeline extends Thread{
     private static String TAG = MessagePipeline.class.getSimpleName();
 
-    // External interfaces
-    public boolean stop = false;
+    private boolean finish = false;
 
-    private Queue<CommandBytes> mCmdQueue = new LinkedList<>();
-    private CommandBytes cCmd;  // current command
-
+    private Queue<Command> mCmdQueue = new LinkedList<>();
+    private Command currCmd;  // current command
 
     private UsbSerialPort mPort;
     private int mTimeout = 200;
@@ -36,7 +34,6 @@ public class MessagePipeline extends Thread{
     private int checkLength;
     private final int READ_ROUNDS = 20;
 
-
     private enum State {
         STOPPED,
         IDLE,
@@ -49,12 +46,7 @@ public class MessagePipeline extends Thread{
 
     @Override
     public void run() {
-        for(;;) {
-            step();
-            if (stop) break;
-        }
-        Log.d(TAG, "<run>Thread end.");
-
+        for(;finish;) step();
     }
 
     private void step() {
@@ -63,9 +55,9 @@ public class MessagePipeline extends Thread{
             case IDLE:
                 if (mCmdQueue.isEmpty()) return;
                 else {
-                    cCmd = mCmdQueue.poll();
+                    currCmd = mCmdQueue.poll();
                     try {
-                        mPort.write(cCmd.cmdBytes, mTimeout);
+                        mPort.write(currCmd.bytes, mTimeout);
                     } catch (IOException e) {
                         Log.d(TAG, "IDLE Write failed.");
                     }
@@ -75,19 +67,18 @@ public class MessagePipeline extends Thread{
                 break;
             case OPERATING:
                 while (count < READ_ROUNDS) {
-                    int recvLength;
+                    int recvLen;
                     try {
-                        //
-                        long st = System.currentTimeMillis();
-                        recvLength = mPort.read(mReadBuffer, 100); // 10ms also OK.
-                        long et = System.currentTimeMillis();
-                        Log.d(TAG, "OPER Read " + recvLength + " bytes.");
-                        Log.d(TAG, HexDump.toHexString(mReadBuffer,0,recvLength));
-                        Log.d(TAG, "executed time: " + (et - st));
+//                        long st = System.currentTimeMillis();
+                        recvLen = mPort.read(mReadBuffer, 100); // 10ms also OK.
+//                        long et = System.currentTimeMillis();
+//                        Log.d(TAG, "OPER Read " + recvLen + " bytes.");
+//                        Log.d(TAG, HexDump.toHexString(mReadBuffer,0,recvLen));
+//                        Log.d(TAG, "executed time: " + (et - st));
 
-                        mCheckBuffer.put(mReadBuffer,0,recvLength);
+                        mCheckBuffer.put(mReadBuffer,0,recvLen);
 
-                        if (checkMessage(mCheckBuffer.array(), cCmd.worker.getEpNum())) break;
+                        if (checkMessage(mCheckBuffer.array(), currCmd.epNum)) break;
 
                     } catch (IOException e) {
                         Log.d(TAG, "OPER Read failed.");
@@ -95,7 +86,7 @@ public class MessagePipeline extends Thread{
 
                     count++;
                 }
-                if (count==READ_ROUNDS) cCmd.worker.mState = ProtocolWorker.PayloadState.payload_invalid;
+                if (count==READ_ROUNDS) currCmd.worker.setStateInvalid();
                 mState = State.IDLE;
                 break;
             case STOPPED:
@@ -104,8 +95,8 @@ public class MessagePipeline extends Thread{
 
     }
 
-    public synchronized boolean addCommand(CommandBytes commandBytes) {
-        return mCmdQueue.offer(commandBytes);
+    synchronized boolean addCommand(Command cmd) {
+        return mCmdQueue.offer(cmd);
     }
 
     private enum CheckProcess {
@@ -120,20 +111,20 @@ public class MessagePipeline extends Thread{
                 msgBytes[1] == (byte) epNum) {
                     checkLength =  (msgBytes[2] | msgBytes[3]<<8) + 4+2+4; //msg header + msg tail + status
                     mCheckProcess = CheckProcess.length;
-                    Log.d("TAG", "header pass");
-                    Log.d("TAG", "check length: " + checkLength);
+//                    Log.d("TAG", "header pass");
+//                    Log.d("TAG", "check length: " + checkLength);
                 } else if (msgBytes[0] == Protocol.CNST_STARTBYTE_STATUS &&
                         msgBytes[1] == (byte) epNum && mCheckBuffer.length() == 4){
-                    cCmd.worker.msgInfo = new MessageInfo(
+                    currCmd.worker.setMessage(new Message(
                             Arrays.copyOfRange(msgBytes,mCheckBuffer.length()-2,mCheckBuffer.length())
-                    );
-                    cCmd.worker.mState = ProtocolWorker.PayloadState.payload_valid;
+                    ));
+                    currCmd.worker.setStateValid();
                     return true;
                 } else {
                     break;
                 }
             case length:
-                Log.d("TAG", "checkbuf length: " + mCheckBuffer.length());
+//                Log.d("TAG", "checkbuf length: " + mCheckBuffer.length());
                 if (mCheckBuffer.length() >= checkLength) {
                     mCheckProcess = CheckProcess.tail;
                     Log.d("TAG", "length pass");
@@ -147,18 +138,24 @@ public class MessagePipeline extends Thread{
                     msgBytes[tail-3] == Protocol.CNST_STARTBYTE_STATUS &&
                     msgBytes[tail-2] == (byte) epNum
                 ) {
-                    Log.d("TAG", "tail pass");
-                    cCmd.worker.msgInfo = new MessageInfo(
+//                    Log.d("TAG", "tail pass");
+                    currCmd.worker.setMessage(new Message(
                             Arrays.copyOfRange(msgBytes,4,checkLength-6),   // msgTail(2)+status(4)=6;
                             Arrays.copyOfRange(msgBytes,checkLength-4,checkLength)
-                    );
-                    cCmd.worker.mState = ProtocolWorker.PayloadState.payload_valid;
+                    ));
+                    currCmd.worker.setStateValid();
                     mCheckProcess = CheckProcess.header; // reset check process
                     return true;
                 }
         }
         return false;
     }
+
+    public void finish() {
+        finish = true;
+    }
+
+
 
 
 

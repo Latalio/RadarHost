@@ -3,12 +3,14 @@ package com.la.radarhost;
 import android.content.Context;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
 
 import com.la.radarhost.comlib.Command;
 import com.la.radarhost.comlib.MessagePipeline;
 import com.la.radarhost.comlib.ProtocolWorker;
+import com.la.radarhost.comlib.RadarEventListener;
 import com.la.radarhost.comlib.comport.driver.UsbSerialConstant;
 import com.la.radarhost.comlib.comport.driver.UsbSerialDriver;
 import com.la.radarhost.comlib.comport.driver.UsbSerialPort;
@@ -28,7 +30,6 @@ public class D2GRadar {
     private EndpointRadarBase mEpBase;
     private EndpointTargetDetection mEpTargetDetect;
 
-    private Handler mHandler;
     private MessagePipeline mMsgPipe;
 
     private UsbManager mUsbManager;
@@ -39,6 +40,7 @@ public class D2GRadar {
     // state field
     private boolean connected = false;
 
+    private RadarEventListener mListener;
 
     // todo checkout vendor and product id
     private final int D2G_VENDOR_ID = 1419;
@@ -51,7 +53,6 @@ public class D2GRadar {
         mEpZero = new EndpointZero();
         mEpBase = new EndpointRadarBase();
         mEpTargetDetect = new EndpointTargetDetection();
-
     }
 
     public boolean connect(Context context) {
@@ -92,6 +93,8 @@ public class D2GRadar {
         Log.d(TAG, "Port open succeed.");
 
         connected = true;
+        mMsgPipe = new MessagePipeline(mPort);
+        mMsgPipe.start();
         return true;
     }
 
@@ -101,29 +104,29 @@ public class D2GRadar {
     }
 
     public void run() {
-        Command cmd = new Command("SET_AUTOMATIC_TRIGGER");
-        mEpBase.setAutomaticFrameTrigger(100000); //100000us = 100ms
-        ProtocolWorker worker = new ProtocolWorker(mHandler, mEpBase, cmd, mMsgPipe);
-        worker.start();
+        Command cmd = new Command(mEpBase,"SET_AUTOMATIC_TRIGGER");
+        EndpointRadarBase.setAutomaticFrameTrigger(100000); //100000us = 100ms
+        ProtocolWorker worker = new ProtocolWorker(mListener, mMsgPipe, cmd);
+        AsyncTask.execute(worker);
     }
 
     public void stop() {
-        Command cmd = new Command("SET_AUTOMATIC_TRIGGER");
+        Command cmd = new Command(mEpBase,"SET_AUTOMATIC_TRIGGER");
         mEpBase.setAutomaticFrameTrigger(0);
-        ProtocolWorker worker = new ProtocolWorker(mHandler, mEpBase, cmd, mMsgPipe);
-        worker.start();
+        ProtocolWorker worker = new ProtocolWorker(mListener, mMsgPipe, cmd);
+        AsyncTask.execute(worker);
     }
 
     public void getTargets() {
-        Command cmd = new Command("GET_TARGETS");
-        ProtocolWorker worker = new ProtocolWorker(mHandler, mEpTargetDetect, cmd, mMsgPipe);
-        worker.start();
+        Command cmd = new Command(mEpTargetDetect, "GET_TARGETS");
+        ProtocolWorker worker = new ProtocolWorker(mListener, mMsgPipe, cmd);
+        AsyncTask.execute(worker);
     }
 
     public void getTargetsRepeat(int interval) {
-        Command cmd = new Command("GET_TARGETS", true, interval);
-        ProtocolWorker worker = new ProtocolWorker(mHandler, mEpTargetDetect, cmd, mMsgPipe);
-        worker.start();
+        Command cmd = new Command(mEpTargetDetect, "GET_TARGETS", true, interval);
+        ProtocolWorker worker = new ProtocolWorker(mListener, mMsgPipe, cmd);
+        AsyncTask.execute(worker);
     }
 
     public boolean isConnected() {

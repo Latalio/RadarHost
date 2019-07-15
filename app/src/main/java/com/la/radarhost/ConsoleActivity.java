@@ -13,9 +13,11 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.la.radarhost.comlib.ProtocolWorker;
+import com.la.radarhost.comlib.RadarEvent;
+import com.la.radarhost.comlib.RadarEventListener;
 import com.la.radarhost.comlib.endpoint.targetdetection.TargetInfo;
 
-public class ConsoleActivity extends AppCompatActivity {
+public class ConsoleActivity extends AppCompatActivity implements RadarEventListener {
     private final static String TAG = ConsoleActivity.class.getSimpleName();
 
 
@@ -30,9 +32,6 @@ public class ConsoleActivity extends AppCompatActivity {
 
     // radar-about
     private D2GRadar mSensor;
-
-    private Handler mHandler;
-
     private ProtocolWorker mTargetDetectWorker;
 
     @Override
@@ -63,8 +62,6 @@ public class ConsoleActivity extends AppCompatActivity {
         //  el indicate the user to plug in the device
         // 2.open the device (consider success or failure)
         // 3.launch the MsgPipe
-
-        mHandler = new MsgHandler();
     }
 
     @Override
@@ -73,7 +70,10 @@ public class ConsoleActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onRadarChanged(RadarEvent event) {
 
+    }
 
     @Override
     protected void onDestroy() {
@@ -88,7 +88,7 @@ public class ConsoleActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             if (mBtnRun.isActivated()) {
-                Log.d(TAG, "<runBtn onClick> stop");
+                Log.d(TAG, "<runBtn onClick> finish");
                 mSensor.stop();
                 mBtnRun.setActivated(false);
                 mBtnRun.setText("Run");
@@ -106,7 +106,7 @@ public class ConsoleActivity extends AppCompatActivity {
         public void onClick(View v) {
             if (mBtnTargets.isActivated()) {
                 Log.d(TAG, "<btnTarget onClick> inactivated");
-//                mSensor.stop();
+//                mSensor.finish();
                 mBtnTargets.setActivated(false);
 //                mBtnTargets.setText("Run");
             } else {

@@ -2,6 +2,7 @@ package com.la.radarhost.comlib.endpoint.base;
 
 import android.os.Message;
 
+import com.la.radarhost.comlib.RadarEvent;
 import com.la.radarhost.comlib.endpoint.Endpoint;
 import com.la.radarhost.comlib.protocol.MessageInfo;
 import com.la.radarhost.comlib.protocol.Protocol;
@@ -40,24 +41,24 @@ public class EndpointRadarBase extends Endpoint {
         minVersion = 1;
         maxVersion = 1;
         description = "ifxRadarBase";
-        commands = new HashMap<String, byte[]>();
     }
 
     @Override
-    public void parsePayload(byte[] payload, Message msg) {
+    public void parsePayload(byte[] payload, RadarEvent event) {
         //todo
     }
 
     private int parseFrameInfo() {
+        // todo
         return 0;
     }
 
-    public void setAutomaticFrameTrigger(long frameIntervalUs) {
+    public static byte[] setAutomaticFrameTrigger(long frameIntervalUs) {
         byte[] cmd = new byte[5];
 
         Protocol.writePayload(cmd, MSG_SET_AUTOMATIC_TRIGGER);
         Protocol.writePayload(cmd,1,frameIntervalUs);
 
-        commands.put("SET_AUTOMATIC_TRIGGER", cmd);
+        return wrapCommand(cmd);
     }
 }

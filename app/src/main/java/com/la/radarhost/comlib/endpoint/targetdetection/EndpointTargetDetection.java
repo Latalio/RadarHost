@@ -3,6 +3,7 @@ package com.la.radarhost.comlib.endpoint.targetdetection;
 import android.os.Message;
 
 import com.la.radarhost.D2GRadar;
+import com.la.radarhost.comlib.RadarEvent;
 import com.la.radarhost.comlib.endpoint.Endpoint;
 import com.la.radarhost.comlib.protocol.MessageInfo;
 import com.la.radarhost.comlib.protocol.Protocol;
@@ -37,18 +38,18 @@ public class EndpointTargetDetection extends Endpoint {
 
 
     @Override
-    public void parsePayload(byte[] payload, Message msg) {
+    public void parsePayload(byte[] payload, RadarEvent event) {
         byte msgTag = (byte)Protocol.readPayload(payload,0,1);
         switch (msgTag) {
             case MSG_GET_TARGETS:
-                parseTargetInfo(payload, msg);
+                parseTargetInfo(payload, event);
                 break;
             default:
                 break;
         }
     }
 
-    private static void parseTargetInfo(byte[] payload, Message msg) {
+    private static void parseTargetInfo(byte[] payload, RadarEvent event) {
         short numTargets = (short)Protocol.readPayload(payload,1,1);
         TargetInfo[] targets = new TargetInfo[numTargets];
 
@@ -80,8 +81,8 @@ public class EndpointTargetDetection extends Endpoint {
                 targets[i] = targetInfo;
             }
         }
-        msg.what = D2GRadar.MT_GET_TARGETS;
-        msg.obj = targets;
+        event.type = D2GRadar.MT_GET_TARGETS;
+        event.obj = targets;
     }
 
     private void parseDSPSettings(byte[] payload, Message msg) {

@@ -90,7 +90,7 @@ public class Protocol {
 //        mPort.sendData(msgTail,0);   // 2 Bytes
 //    }
 //
-//    private int getMessage(MessageInfo msgInfo) {
+//    private int getMessage(Message msg) {
 //        int numReceivedBytes;
 //        byte[] msgHeader = new byte[4];
 //
@@ -131,8 +131,8 @@ public class Protocol {
 //                return PROTOCOL_ERROR_RECEIVED_BAD_MESSAGE_END;
 //            }
 //
-//            msgInfo.endpoint = msgHeader[1];
-//            msgInfo.payload = payload;
+//            msg.endpoint = msgHeader[1];
+//            msg.payload = payload;
 //
 //            return CNST_PROTOCOL_RECEIVED_PAYLOAD_MSG;
 //        }
@@ -157,7 +157,7 @@ public class Protocol {
      * 打开特定端口，并获取端点信息。
      */
 //    public int connect() {
-//        MessageInfo msgInfo = new MessageInfo();
+//        Message msg = new Message();
 //        int statusCode;
 //
 //        mPortNumber = mPort.open();
@@ -171,18 +171,18 @@ public class Protocol {
 //        sendMessage(0, uQueryMessage);
 //
 //        /* get msg and check validation */
-//        statusCode = getMessage(msgInfo);
+//        statusCode = getMessage(msg);
 //        if ((statusCode != CNST_PROTOCOL_RECEIVED_PAYLOAD_MSG) ||
-//                (msgInfo.endpoint != 0) ||
-//                (msgInfo.payload.length <2 ) ||
-//                (msgInfo.payload[0] != CNST_MSG_ENDPOINT_INFO)) {
+//                (msg.endpoint != 0) ||
+//                (msg.payload.length <2 ) ||
+//                (msg.payload[0] != CNST_MSG_ENDPOINT_INFO)) {
 //            mPort.close();
 //            Log.d(TAG, "status code error");
 //            return PROTOCOL_ERROR_DEVICE_NOT_COMPATIBLE;
 //        }
 //
-//        numEndpoints = msgInfo.payload[1];
-//        if ((msgInfo.payload.length != 6*numEndpoints + 2) ||
+//        numEndpoints = msg.payload[1];
+//        if ((msg.payload.length != 6*numEndpoints + 2) ||
 //                (numEndpoints == 0)) {
 //            mPort.close();
 //            Log.d(TAG, "payload length error");
@@ -193,13 +193,13 @@ public class Protocol {
 //        devEndpoints = new Endpoint[numEndpoints];
 //        for(int i=0; i<numEndpoints; ++i) {
 //            Endpoint endpoint = devEndpoints[i];
-//            endpoint.type = readPayload(msgInfo.payload, 2 + i*6, 4);
-//            endpoint.version = (int)readPayload(msgInfo.payload, 6 + i*6, 2);
+//            endpoint.type = readPayload(msg.payload, 2 + i*6, 4);
+//            endpoint.version = (int)readPayload(msg.payload, 6 + i*6, 2);
 //            endpoint.checkCompatibility();
 //        }
 //
 //        /* check the status code */
-//        statusCode = getMessage(msgInfo);
+//        statusCode = getMessage(msg);
 //        if (statusCode != 0) {   // (/*endpoint*/0 << 16) | /*status code*/0x0000)
 //            devEndpoints = null;
 //            mPort.close();
@@ -225,7 +225,7 @@ public class Protocol {
 //    // be called by ep functions
 //    public int sendAndReceive(Endpoint endpoint, byte[] payload) {
 //        int statusCode;
-//        MessageInfo messageInfo = new MessageInfo();
+//        Message messageInfo = new Message();
 //        /* check mHandle and endpoint compatibility */
 //        /* --------------------------------------- */
 //        /* check mHandle */

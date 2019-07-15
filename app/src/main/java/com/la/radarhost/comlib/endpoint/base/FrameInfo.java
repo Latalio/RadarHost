@@ -1,4 +1,4 @@
-package com.la.radarhost.comlib.endpoint.base.datastructrue;
+package com.la.radarhost.comlib.endpoint.base;
 
 public class FrameInfo {
     float[] sample_data;
