@@ -163,7 +163,7 @@ public class UsbSerialPort {
             }
             if (amtWritten <= 0) {
                 throw new IOException("Error writing " + writeLength
-                        + " bytes at offset " + offset + " length=" + src.length);
+                        + " bytes at offset " + offset + " LENGTH=" + src.length);
             }
 
             Log.d(TAG, "Wrote amt=" + amtWritten + " attempted=" + writeLength);

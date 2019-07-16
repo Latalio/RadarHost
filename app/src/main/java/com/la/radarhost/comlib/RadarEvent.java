@@ -13,6 +13,9 @@ public class RadarEvent {
 
     }
 
-    public static final int PAYLOAD_INVALID = -11;
+    public static final int TYPE_ERROR_TIMEOUT = -11;
+    public static final int TYPE_TARGETS = 0x0702;
+
+    public static final RadarEvent EVENT_TIMEOUT = new RadarEvent(TYPE_ERROR_TIMEOUT);
 
 }

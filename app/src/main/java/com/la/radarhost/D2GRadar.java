@@ -4,12 +4,11 @@ import android.content.Context;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.util.Log;
 
 import com.la.radarhost.comlib.Command;
+import com.la.radarhost.comlib.MessageParser;
 import com.la.radarhost.comlib.MessagePipeline;
-import com.la.radarhost.comlib.ProtocolWorker;
 import com.la.radarhost.comlib.RadarEventListener;
 import com.la.radarhost.comlib.comport.driver.UsbSerialConstant;
 import com.la.radarhost.comlib.comport.driver.UsbSerialDriver;
@@ -31,6 +30,7 @@ public class D2GRadar {
     private EndpointTargetDetection mEpTargetDetect;
 
     private MessagePipeline mMsgPipe;
+    private MessageParser mParser;
 
     private UsbManager mUsbManager;
     private UsbDevice mDevice;
@@ -93,7 +93,10 @@ public class D2GRadar {
         Log.d(TAG, "Port open succeed.");
 
         connected = true;
-        mMsgPipe = new MessagePipeline(mPort);
+
+        mParser = new MessageParser(mListener);
+        mParser.start();
+        mMsgPipe = new MessagePipeline(mPort, mParser);
         mMsgPipe.start();
         return true;
     }
@@ -104,23 +107,18 @@ public class D2GRadar {
     }
 
     public void run() {
-        Command cmd = new Command(mEpBase,"SET_AUTOMATIC_TRIGGER");
-        EndpointRadarBase.setAutomaticFrameTrigger(100000); //100000us = 100ms
-        ProtocolWorker worker = new ProtocolWorker(mListener, mMsgPipe, cmd);
-        AsyncTask.execute(worker);
+        Command cmd = new Command(mEpBase, mEpBase.setAutomaticFrameTrigger(100000));
+        mMsgPipe.addCommand(cmd);
     }
 
     public void stop() {
-        Command cmd = new Command(mEpBase,"SET_AUTOMATIC_TRIGGER");
-        mEpBase.setAutomaticFrameTrigger(0);
-        ProtocolWorker worker = new ProtocolWorker(mListener, mMsgPipe, cmd);
-        AsyncTask.execute(worker);
+        Command cmd = new Command(mEpBase, mEpBase.setAutomaticFrameTrigger(0));
+        mMsgPipe.addCommand(cmd);
     }
 
     public void getTargets() {
-        Command cmd = new Command(mEpTargetDetect, "GET_TARGETS");
-        ProtocolWorker worker = new ProtocolWorker(mListener, mMsgPipe, cmd);
-        AsyncTask.execute(worker);
+        Command cmd = new Command(mEpTargetDetect, mEpTargetDetect.getTargets());
+        mMsgPipe.addCommand(cmd);
     }
 
     public void getTargetsRepeat(int interval) {

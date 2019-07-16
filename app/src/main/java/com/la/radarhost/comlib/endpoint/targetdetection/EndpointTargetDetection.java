@@ -15,7 +15,7 @@ import java.util.HashMap;
 public class EndpointTargetDetection extends Endpoint {
     /**
      * Command Codes
-     * Each payload payload of the target detection endpoint starts with one of these command codes.
+     * Each payload payload of the target detection ep starts with one of these command codes.
      */
     private final static byte MSG_GET_DSP_SETTINGS      = 0x00; /**< A payload to retrieve dsp settings */
     private final static byte MSG_SET_DSP_SETTINGS      = 0x01; /**< A payload to set dsp settings */
@@ -29,11 +29,6 @@ public class EndpointTargetDetection extends Endpoint {
         minVersion  = 1;
         maxVersion  = 1;
         description = "ifxRadar Target Detection";
-        commands = new HashMap<String, byte[]>() {{
-            put("GET_DSP_SETTINGS", Endpoint.warpCommand(MSG_GET_DSP_SETTINGS));
-            put("GET_TARGETS", Endpoint.warpCommand(MSG_GET_TARGETS));
-            put("GET_RANGE_THRESHOLD", Endpoint.warpCommand(MSG_GET_RANGE_THRESHOLD));
-        }};
     }
 
 
@@ -93,6 +88,10 @@ public class EndpointTargetDetection extends Endpoint {
     private void parseRangeThreshold(byte[] payload, Message msg) {
         //todo
 
+    }
+
+    public byte[] getTargets() {
+        return wrapCommand(MSG_GET_TARGETS);
     }
 
 }

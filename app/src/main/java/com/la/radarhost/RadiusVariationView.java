@@ -178,7 +178,7 @@ public class RadiusVariationView extends View {
 
         public Points(int length) {
             data = new float[length];
-            Log.d(TAG, "array length:" + data.length);
+            Log.d(TAG, "array LENGTH:" + data.length);
         }
 
         void add(float v) {

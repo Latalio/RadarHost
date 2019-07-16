@@ -1,7 +1,7 @@
 package com.la.radarhost.comlib.endpoint.targetdetection;
 
 public class DSPSettings {
-    short range_mvg_avg_length;	/**< Moving average filter length used for range */
+    short range_mvg_avg_length;	/**< Moving average filter LENGTH used for range */
     short range_thresh_type;	/**< Rang ethreshold type is constant & Adaptive */
 
     int min_range_cm;			/**< Minimum range below which targets are ignored */

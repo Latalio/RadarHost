@@ -3,7 +3,6 @@ package com.la.radarhost.comlib;
 import android.util.Log;
 
 import com.la.radarhost.comlib.comport.driver.UsbSerialPort;
-import com.la.radarhost.comlib.comport.util.HexDump;
 import com.la.radarhost.comlib.protocol.Protocol;
 
 import java.io.IOException;
@@ -20,28 +19,36 @@ public class MessagePipeline extends Thread{
     private Command currCmd;  // current command
 
     private UsbSerialPort mPort;
-    private int mTimeout = 200;
+    private int timeout = 200;
 
-    private final int BUFFER_SIZE = 2048;
-    private final byte[] mReadBuffer = new byte[BUFFER_SIZE];
-
-    private final CheckBuffer mCheckBuffer = new CheckBuffer();
-
-
-    private State mState = State.IDLE;
-
-    private CheckProcess mCheckProcess = CheckProcess.header;
-    private int checkLength;
-    private final int READ_ROUNDS = 20;
 
     private enum State {
         STOPPED,
         IDLE,
         OPERATING
     }
+    private State mState = State.IDLE;
 
-    public MessagePipeline(UsbSerialPort port) {
+    private final int BUFFER_SIZE = 2048;
+    private final byte[] mReadBuffer = new byte[BUFFER_SIZE];
+
+    private final CheckBuffer mCheckBuffer = new CheckBuffer();
+    private enum CheckState {
+        HEADER,
+        LENGTH,
+        TAIL
+    }
+    private CheckState mCheckState = CheckState.HEADER;
+    private int checkLength;
+    private final int READ_ROUNDS = 20;
+
+    private MessageParser mParser;
+
+
+
+    public MessagePipeline(UsbSerialPort port, MessageParser parser) {
         mPort = port;
+        mParser = parser;
     }
 
     @Override
@@ -57,7 +64,7 @@ public class MessagePipeline extends Thread{
                 else {
                     currCmd = mCmdQueue.poll();
                     try {
-                        mPort.write(currCmd.bytes, mTimeout);
+                        mPort.write(currCmd.bytes, timeout);
                     } catch (IOException e) {
                         Log.d(TAG, "IDLE Write failed.");
                     }
@@ -78,7 +85,7 @@ public class MessagePipeline extends Thread{
 
                         mCheckBuffer.put(mReadBuffer,0,recvLen);
 
-                        if (checkMessage(mCheckBuffer.array(), currCmd.epNum)) break;
+                        if (checkMessage(mCheckBuffer.array(), currCmd.ep.epNum)) break;
 
                     } catch (IOException e) {
                         Log.d(TAG, "OPER Read failed.");
@@ -86,7 +93,7 @@ public class MessagePipeline extends Thread{
 
                     count++;
                 }
-                if (count==READ_ROUNDS) currCmd.worker.setStateInvalid();
+
                 mState = State.IDLE;
                 break;
             case STOPPED:
@@ -95,56 +102,52 @@ public class MessagePipeline extends Thread{
 
     }
 
-    synchronized boolean addCommand(Command cmd) {
+    public synchronized boolean addCommand(Command cmd) {
         return mCmdQueue.offer(cmd);
     }
 
-    private enum CheckProcess {
-        header,
-        length,
-        tail
-    }
+
     private boolean checkMessage(byte[] msgBytes, int epNum) {
-        switch (mCheckProcess) {
-            case header:
+        switch (mCheckState) {
+            case HEADER:
                 if (msgBytes[0] == Protocol.CNST_STARTBYTE_DATA &&
                 msgBytes[1] == (byte) epNum) {
-                    checkLength =  (msgBytes[2] | msgBytes[3]<<8) + 4+2+4; //msg header + msg tail + status
-                    mCheckProcess = CheckProcess.length;
-//                    Log.d("TAG", "header pass");
-//                    Log.d("TAG", "check length: " + checkLength);
+                    checkLength =  (msgBytes[2] | msgBytes[3]<<8) + 4+2+4; //msg HEADER + msg TAIL + status
+                    mCheckState = CheckState.LENGTH;
+//                    Log.d("TAG", "HEADER pass");
+//                    Log.d("TAG", "check LENGTH: " + checkLength);
                 } else if (msgBytes[0] == Protocol.CNST_STARTBYTE_STATUS &&
                         msgBytes[1] == (byte) epNum && mCheckBuffer.length() == 4){
-                    currCmd.worker.setMessage(new Message(
+                    currCmd.msg = new Message(
                             Arrays.copyOfRange(msgBytes,mCheckBuffer.length()-2,mCheckBuffer.length())
-                    ));
-                    currCmd.worker.setStateValid();
+                    );
+                    mParser.addCommand(currCmd);
                     return true;
                 } else {
                     break;
                 }
-            case length:
-//                Log.d("TAG", "checkbuf length: " + mCheckBuffer.length());
+            case LENGTH:
+//                Log.d("TAG", "checkbuf LENGTH: " + mCheckBuffer.LENGTH());
                 if (mCheckBuffer.length() >= checkLength) {
-                    mCheckProcess = CheckProcess.tail;
-                    Log.d("TAG", "length pass");
+                    mCheckState = CheckState.TAIL;
+                    Log.d("TAG", "LENGTH pass");
                 } else {
                     break;
                 }
-            case tail:
+            case TAIL:
                 int tail = mCheckBuffer.tail();
                 if (msgBytes[tail-5] == (byte) Protocol.CNST_END_OF_PAYLOAD &&
                     msgBytes[tail-4] == (byte) (Protocol.CNST_END_OF_PAYLOAD>>8) &&
                     msgBytes[tail-3] == Protocol.CNST_STARTBYTE_STATUS &&
                     msgBytes[tail-2] == (byte) epNum
                 ) {
-//                    Log.d("TAG", "tail pass");
-                    currCmd.worker.setMessage(new Message(
+//                    Log.d("TAG", "TAIL pass");
+                    currCmd.msg = new Message(
                             Arrays.copyOfRange(msgBytes,4,checkLength-6),   // msgTail(2)+status(4)=6;
                             Arrays.copyOfRange(msgBytes,checkLength-4,checkLength)
-                    ));
-                    currCmd.worker.setStateValid();
-                    mCheckProcess = CheckProcess.header; // reset check process
+                    );
+                    mParser.addCommand(currCmd);
+                    mCheckState = CheckState.HEADER; // reset check process
                     return true;
                 }
         }
@@ -153,6 +156,10 @@ public class MessagePipeline extends Thread{
 
     public void finish() {
         finish = true;
+    }
+
+    public void setTimeout(int timeoutMillis) {
+        timeout = timeoutMillis;
     }
 
 

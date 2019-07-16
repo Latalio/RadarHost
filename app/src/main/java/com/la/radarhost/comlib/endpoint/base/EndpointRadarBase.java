@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class EndpointRadarBase extends Endpoint {
     /**
      * Command Codes
-     * Each payload payload of the supported endpoint starts with one of these command codes.
+     * Each payload payload of the supported ep starts with one of these command codes.
      *
      */
     public static final byte MSG_FRAME_DATA             = 0x00;
@@ -53,7 +53,7 @@ public class EndpointRadarBase extends Endpoint {
         return 0;
     }
 
-    public static byte[] setAutomaticFrameTrigger(long frameIntervalUs) {
+    public byte[] setAutomaticFrameTrigger(long frameIntervalUs) {
         byte[] cmd = new byte[5];
 
         Protocol.writePayload(cmd, MSG_SET_AUTOMATIC_TRIGGER);

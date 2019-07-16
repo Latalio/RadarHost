@@ -64,22 +64,22 @@ public class Protocol {
 //    private void recoverFromReceiveError() {
 //        /* read until buffer is empty */
 //        byte[] dummy_data = new byte[1024];
-//        int received_bytes = dummy_data.length;
-//        while (received_bytes == dummy_data.length) {
+//        int received_bytes = dummy_data.LENGTH;
+//        while (received_bytes == dummy_data.LENGTH) {
 //            received_bytes = mPort.getData(dummy_data,0);
 //        }
 //        /* now we have run out of data, protocol should be in sync again */
 //    }
 //
 //    private void sendMessage(int epNum, final byte[] payload) {
-//        /* setup payload header and tail */
+//        /* setup payload HEADER and TAIL */
 //        byte[] msgHeader = new byte[4];
 //        byte[] msgTail = new byte[2];
 //
 //        msgHeader[0] = CNST_STARTBYTE_DATA;
 //        msgHeader[1] = (byte) epNum;
-//        msgHeader[2] = (byte) payload.length;
-//        msgHeader[3] = (byte)(payload.length >> 8);
+//        msgHeader[2] = (byte) payload.LENGTH;
+//        msgHeader[3] = (byte)(payload.LENGTH >> 8);
 //
 //        msgTail[0] = (byte) CNST_END_OF_PAYLOAD;
 //        msgTail[1] = (byte)(CNST_END_OF_PAYLOAD >> 8);
@@ -95,11 +95,11 @@ public class Protocol {
 //        byte[] msgHeader = new byte[4];
 //
 //        numReceivedBytes = mPort.getData(msgHeader,0);
-//        if (numReceivedBytes < msgHeader.length) {
+//        if (numReceivedBytes < msgHeader.LENGTH) {
 //            numReceivedBytes += mPort.getData(msgHeader, numReceivedBytes);
 //        }                          // get again
 //        if (numReceivedBytes == 0) return PROTOCOL_ERROR_RECEIVED_NO_MESSAGE;   // no msg
-//        else if (numReceivedBytes < msgHeader.length)  {
+//        else if (numReceivedBytes < msgHeader.LENGTH)  {
 //            recoverFromReceiveError();
 //            return PROTOCOL_ERROR_RECEIVED_TIMEOUT;
 //        }                    // timeout
@@ -121,26 +121,26 @@ public class Protocol {
 //                return PROTOCOL_ERROR_RECEIVED_TIMEOUT;
 //            }
 //
-//            /* check payload tail */
+//            /* check payload TAIL */
 //            numReceivedBytes = mPort.getData(msgTail, 0);
 //
-//            if ((numReceivedBytes != msgTail.length) ||
+//            if ((numReceivedBytes != msgTail.LENGTH) ||
 //                    (msgTail[0] != (byte) CNST_END_OF_PAYLOAD) ||
 //                    (msgTail[1] != (byte)(CNST_END_OF_PAYLOAD >> 8))) {
 //                recoverFromReceiveError();
 //                return PROTOCOL_ERROR_RECEIVED_BAD_MESSAGE_END;
 //            }
 //
-//            msg.endpoint = msgHeader[1];
+//            msg.ep = msgHeader[1];
 //            msg.payload = payload;
 //
 //            return CNST_PROTOCOL_RECEIVED_PAYLOAD_MSG;
 //        }
 //        else if (msgHeader[0] == CNST_STARTBYTE_STATUS) {
-//            short endpoint = msgHeader[1];
+//            short ep = msgHeader[1];
 //            int status_code = (int) msgHeader[2] | ((int)msgHeader[3]) <<8;
 //
-//            return ((int)endpoint << 16) | status_code;
+//            return ((int)ep << 16) | status_code;
 //        }
 //        else {
 //            recoverFromReceiveError();
@@ -166,15 +166,15 @@ public class Protocol {
 //            return PROTOCOL_ERROR_COULD_NOT_OPEN_COM_PORT;
 //        }
 //
-//        /* query endpoint information */
+//        /* query ep information */
 //        byte[] uQueryMessage = { CNST_MSG_QUERY_ENDPOINT_INFO };
 //        sendMessage(0, uQueryMessage);
 //
 //        /* get msg and check validation */
 //        statusCode = getMessage(msg);
 //        if ((statusCode != CNST_PROTOCOL_RECEIVED_PAYLOAD_MSG) ||
-//                (msg.endpoint != 0) ||
-//                (msg.payload.length <2 ) ||
+//                (msg.ep != 0) ||
+//                (msg.payload.LENGTH <2 ) ||
 //                (msg.payload[0] != CNST_MSG_ENDPOINT_INFO)) {
 //            mPort.close();
 //            Log.d(TAG, "status code error");
@@ -182,25 +182,25 @@ public class Protocol {
 //        }
 //
 //        numEndpoints = msg.payload[1];
-//        if ((msg.payload.length != 6*numEndpoints + 2) ||
+//        if ((msg.payload.LENGTH != 6*numEndpoints + 2) ||
 //                (numEndpoints == 0)) {
 //            mPort.close();
-//            Log.d(TAG, "payload length error");
+//            Log.d(TAG, "payload LENGTH error");
 //            return PROTOCOL_ERROR_DEVICE_NOT_COMPATIBLE;
 //        }
 //
-//        /* parse endpoint msg */
+//        /* parse ep msg */
 //        devEndpoints = new Endpoint[numEndpoints];
 //        for(int i=0; i<numEndpoints; ++i) {
-//            Endpoint endpoint = devEndpoints[i];
-//            endpoint.type = readPayload(msg.payload, 2 + i*6, 4);
-//            endpoint.version = (int)readPayload(msg.payload, 6 + i*6, 2);
-//            endpoint.checkCompatibility();
+//            Endpoint ep = devEndpoints[i];
+//            ep.type = readPayload(msg.payload, 2 + i*6, 4);
+//            ep.version = (int)readPayload(msg.payload, 6 + i*6, 2);
+//            ep.checkCompatibility();
 //        }
 //
 //        /* check the status code */
 //        statusCode = getMessage(msg);
-//        if (statusCode != 0) {   // (/*endpoint*/0 << 16) | /*status code*/0x0000)
+//        if (statusCode != 0) {   // (/*ep*/0 << 16) | /*status code*/0x0000)
 //            devEndpoints = null;
 //            mPort.close();
 //            return PROTOCOL_ERROR_DEVICE_NOT_COMPATIBLE;
@@ -223,27 +223,27 @@ public class Protocol {
 //    }
 
 //    // be called by ep functions
-//    public int sendAndReceive(Endpoint endpoint, byte[] payload) {
+//    public int sendAndReceive(Endpoint ep, byte[] payload) {
 //        int statusCode;
 //        Message messageInfo = new Message();
-//        /* check mHandle and endpoint compatibility */
+//        /* check mHandle and ep compatibility */
 //        /* --------------------------------------- */
 //        /* check mHandle */
 //        if (ProtocolManager.isValid(this)) {
 //            return PROTOCOL_ERROR_INVALID_HANDLE;
 //        }
 //
-//        /* check if endpoint exists */
-//        if (!existInDevEndpoints(endpoint)) {
-//            return nonexistReason(endpoint);
+//        /* check if ep exists */
+//        if (!existInDevEndpoints(ep)) {
+//            return nonexistReason(ep);
 //        }
 //
 //        /* send payload */
-//        sendMessage(endpoint.epNum, payload);
+//        sendMessage(ep.epNum, payload);
 //
 //        /* receive payload from the board */
 //        while ((statusCode = getMessage(messageInfo)) == CNST_PROTOCOL_RECEIVED_PAYLOAD_MSG) {
-//            endpoint.parsePayload(messageInfo);
+//            ep.parsePayload(messageInfo);
 //            messageInfo = null;
 //        }
 //
@@ -251,20 +251,20 @@ public class Protocol {
 //    }
 
     // return 0 means valid
-//    private int nonexistReason(Endpoint endpoint) {
-//        if (endpoint.type != endpoint.epHostDef.type)
+//    private int nonexistReason(Endpoint ep) {
+//        if (ep.type != ep.epHostDef.type)
 //            return PROTOCOL_ERROR_ENDPOINT_WRONG_TYPE;
-//        if (endpoint.version < endpoint.epHostDef.minVersion)
+//        if (ep.version < ep.epHostDef.minVersion)
 //            return PROTOCOL_ERROR_ENDPOINT_VERSION_TOO_OLD;
-//        if (endpoint.version > endpoint.epHostDef.maxVersion)
+//        if (ep.version > ep.epHostDef.maxVersion)
 //            return PROTOCOL_ERROR_ENDPOINT_VERSION_TOO_NEW;
 //        return 0;
 //    }
 //
-//    private boolean existInDevEndpoints(Endpoint endpoint) {
+//    private boolean existInDevEndpoints(Endpoint ep) {
 //        boolean hit = false;
 //        for (Endpoint ep : devEndpoints) {
-//            if (ep.epHostDef.equals(endpoint.epHostDef)) {
+//            if (ep.epHostDef.equals(ep.epHostDef)) {
 //                hit = true;
 //                break;
 //            }
@@ -306,7 +306,7 @@ public class Protocol {
 //        return numEndpoints;
 //    }
 //    public Endpoint[] getDevEndpoints() {
-//        return Arrays.copyOf(devEndpoints, devEndpoints.length);
+//        return Arrays.copyOf(devEndpoints, devEndpoints.LENGTH);
 //    }
 
 
