@@ -2,15 +2,9 @@ package com.la.radarhost.comlib.endpoint.targetdetection;
 
 import android.os.Message;
 
-import com.la.radarhost.D2GRadar;
 import com.la.radarhost.comlib.RadarEvent;
 import com.la.radarhost.comlib.endpoint.Endpoint;
-import com.la.radarhost.comlib.protocol.MessageInfo;
 import com.la.radarhost.comlib.protocol.Protocol;
-
-import java.io.ByteArrayInputStream;
-import java.util.Arrays;
-import java.util.HashMap;
 
 public class EndpointTargetDetection extends Endpoint {
     /**
@@ -76,7 +70,7 @@ public class EndpointTargetDetection extends Endpoint {
                 targets[i] = targetInfo;
             }
         }
-        event.type = D2GRadar.MT_GET_TARGETS;
+        event.type = RadarEvent.TYPE_TARGETS;
         event.obj = targets;
     }
 

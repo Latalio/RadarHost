@@ -1,11 +1,6 @@
 package com.la.radarhost.comlib.protocol;
 
-import android.util.Log;
-
-import com.la.radarhost.comlib.comport.COMPort;
 import com.la.radarhost.comlib.endpoint.Endpoint;
-
-import java.util.Arrays;
 
 public class Protocol {
     private final String TAG = Protocol.class.getSimpleName();

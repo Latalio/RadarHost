@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.la.radarhost.comlib.RadarEvent;
@@ -22,15 +23,16 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
     //todo extend the general Text to a specific one
     // view-about
     private TextView mTxtState;
-    private TextView mTxtTargets;
+    private static TextView mTxtTargets;
     private Button mBtnRun;
     private Button mBtnTargets;
-    private RadiusVariationView mViewRadius;
+    private static RadiusVariationView mViewRadius;
+
+    private PopupMenu
 
 
     // radar-about
-    private D2GRadar mSensor;
-    private ProtocolWorker mTargetDetectWorker;
+    private RadarManager mSensor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +49,7 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
         mBtnRun.setOnClickListener(new BtnRunListener());
         mBtnTargets.setOnClickListener(new BtnTargetsListener());
 
-        mSensor = new D2GRadar();
+        mSensor = new RadarManager(this);
         if (!mSensor.connect(this)) {
             Log.e(TAG, "mSensor connection failed.");
             Intent intent = new Intent(this, NoDevActivity.class);
@@ -70,7 +72,28 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
 
     @Override
     public void onRadarChanged(RadarEvent event) {
+        Log.e(TAG, "new event occur");
+        switch (event.type) {
+            case RadarEvent.TYPE_TARGETS:
+                TargetInfo[] targets = (TargetInfo[])event.obj;
+                StringBuilder sb = new StringBuilder();
+                for(TargetInfo target:targets) {
+                    sb.append("id: ");
+                    sb.append(target.getTargetID());
+                    sb.append("\ndistance: ");
+                    sb.append(target.getRadius());
+                    sb.append("\nspeed: ");
+                    sb.append(target.getRadial_speed());
+                    sb.append("--------------------\n");
+                }
+//                mTxtTargets.setText(sb.toString());
+                Log.e(TAG, sb.toString());
 
+//                mViewRadius.update(targets[0].getRadius());
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
@@ -86,12 +109,12 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
         @Override
         public void onClick(View v) {
             if (mBtnRun.isActivated()) {
-                Log.d(TAG, "<runBtn onClick> finish");
+                Log.e(TAG, "<runBtn onClick> finish");
                 mSensor.stop();
                 mBtnRun.setActivated(false);
                 mBtnRun.setText("Run");
             } else {
-                Log.d(TAG, "<runBtn onClick> start");
+                Log.e(TAG, "<runBtn onClick> start");
                 mSensor.run();
                 mBtnRun.setActivated(true);
                 mBtnRun.setText("Running");
@@ -103,12 +126,12 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
         @Override
         public void onClick(View v) {
             if (mBtnTargets.isActivated()) {
-                Log.d(TAG, "<btnTarget onClick> inactivated");
+                Log.e(TAG, "<btnTarget onClick> inactivated");
 //                mSensor.finish();
                 mBtnTargets.setActivated(false);
 //                mBtnTargets.setText("Run");
             } else {
-                Log.d(TAG, "<runBtn onClick> activated");
+                Log.e(TAG, "<btnTarget onClick> activated");
                 mSensor.getTargetsRepeat(1000); //1000ms = 1s
                 mBtnTargets.setActivated(true);
 //                mBtnTargets.setText("Running");
@@ -120,7 +143,7 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case D2GRadar.MT_GET_TARGETS:
+                case RadarManager.MT_GET_TARGETS:
                     TargetInfo[] targets = (TargetInfo[])msg.obj;
                     StringBuilder sb = new StringBuilder();
                     for(TargetInfo target:targets) {

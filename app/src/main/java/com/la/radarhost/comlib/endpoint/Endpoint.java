@@ -1,13 +1,9 @@
 package com.la.radarhost.comlib.endpoint;
 
-import android.os.Message;
-
 import com.la.radarhost.comlib.RadarEvent;
-import com.la.radarhost.comlib.protocol.MessageInfo;
 import com.la.radarhost.comlib.protocol.Protocol;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Map;
 
 public abstract class Endpoint {
     /**< The type of the ep. */

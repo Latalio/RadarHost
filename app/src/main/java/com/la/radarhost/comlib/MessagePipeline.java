@@ -13,7 +13,8 @@ import java.util.Queue;
 public class MessagePipeline extends Thread{
     private static String TAG = MessagePipeline.class.getSimpleName();
 
-    private boolean finish = false;
+    private boolean terminate = false;
+    private boolean terminated = false;
 
     private Queue<Command> mCmdQueue = new LinkedList<>();
     private Command currCmd;  // current command
@@ -23,9 +24,9 @@ public class MessagePipeline extends Thread{
 
 
     private enum State {
-        STOPPED,
         IDLE,
-        OPERATING
+        OPERATING,
+        TERMINATED
     }
     private State mState = State.IDLE;
 
@@ -46,66 +47,66 @@ public class MessagePipeline extends Thread{
 
 
 
-    public MessagePipeline(UsbSerialPort port, MessageParser parser) {
+    public MessagePipeline(UsbSerialPort port, RadarEventListener listener) {
         mPort = port;
-        mParser = parser;
+        mParser = new MessageParser(listener);
+        mParser.start();
     }
 
     @Override
     public void run() {
-        for(;finish;) step();
+        for(;!terminated;) {
+            switch (mState) {
+                case IDLE: idle(); break;
+                case OPERATING: operating(); break;
+                case TERMINATED: terminated(); break;
+                default: break;
+            }
+        }
     }
 
-    private void step() {
+    private void idle() {
+        if((currCmd = mCmdQueue.poll()) != null) {
+            try {
+                mPort.write(currCmd.bytes, timeout);
+            } catch (IOException e) {
+                Log.d(TAG, "IDLE Write failed.");
+            }
+            mCheckBuffer.clear();
+
+            mState = State.OPERATING;
+        }
+    }
+
+    private void operating() {
         short count = 0;
-        switch (mState) {
-            case IDLE:
-                if (mCmdQueue.isEmpty()) return;
-                else {
-                    currCmd = mCmdQueue.poll();
-                    try {
-                        mPort.write(currCmd.bytes, timeout);
-                    } catch (IOException e) {
-                        Log.d(TAG, "IDLE Write failed.");
-                    }
-                    mCheckBuffer.clear();
-                    mState = State.OPERATING;
-                }
-                break;
-            case OPERATING:
-                while (count < READ_ROUNDS) {
-                    int recvLen;
-                    try {
-//                        long st = System.currentTimeMillis();
-                        recvLen = mPort.read(mReadBuffer, 100); // 10ms also OK.
-//                        long et = System.currentTimeMillis();
-//                        Log.d(TAG, "OPER Read " + recvLen + " bytes.");
-//                        Log.d(TAG, HexDump.toHexString(mReadBuffer,0,recvLen));
-//                        Log.d(TAG, "executed time: " + (et - st));
+        while (count < READ_ROUNDS) {
+            try {
+                int recvLen = mPort.read(mReadBuffer, 100); // 10ms also OK.
 
-                        mCheckBuffer.put(mReadBuffer,0,recvLen);
-
-                        if (checkMessage(mCheckBuffer.array(), currCmd.ep.epNum)) break;
-
-                    } catch (IOException e) {
-                        Log.d(TAG, "OPER Read failed.");
-                    }
-
-                    count++;
-                }
-
-                mState = State.IDLE;
-                break;
-            case STOPPED:
-                break;
+                mCheckBuffer.put(mReadBuffer,0,recvLen);
+                if (checkMessage(mCheckBuffer.array(), currCmd.ep.epNum)) break;
+            } catch (IOException e) {
+                Log.d(TAG, "OPER Read failed.");
+            }
+            count++;
         }
 
+        mState = State.IDLE;
+    }
+
+    private void terminated() {
+        if (terminate) {
+            terminated = true;
+            mParser.terminate();
+        }
+
+        mState = State.IDLE;
     }
 
     public synchronized boolean addCommand(Command cmd) {
         return mCmdQueue.offer(cmd);
     }
-
 
     private boolean checkMessage(byte[] msgBytes, int epNum) {
         switch (mCheckState) {
@@ -154,8 +155,8 @@ public class MessagePipeline extends Thread{
         return false;
     }
 
-    public void finish() {
-        finish = true;
+    public void terminate() {
+        terminate = true;
     }
 
     public void setTimeout(int timeoutMillis) {

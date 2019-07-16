@@ -1,14 +1,18 @@
 package com.la.radarhost;
 
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
-import android.os.AsyncTask;
+import android.os.IBinder;
 import android.util.Log;
 
 import com.la.radarhost.comlib.Command;
+import com.la.radarhost.comlib.CommandScheduler;
 import com.la.radarhost.comlib.MessageParser;
 import com.la.radarhost.comlib.MessagePipeline;
+import com.la.radarhost.comlib.RadarConfiguration;
 import com.la.radarhost.comlib.RadarEventListener;
 import com.la.radarhost.comlib.comport.driver.UsbSerialConstant;
 import com.la.radarhost.comlib.comport.driver.UsbSerialDriver;
@@ -22,44 +26,68 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class D2GRadar {
-    private final static String TAG = D2GRadar.class.getSimpleName();
+public class RadarManager {
+    private final static String TAG = RadarManager.class.getSimpleName();
+
+    private final Context context;
 
     private EndpointZero mEpZero;
     private EndpointRadarBase mEpBase;
     private EndpointTargetDetection mEpTargetDetect;
 
     private MessagePipeline mMsgPipe;
-    private MessageParser mParser;
+    private CommandScheduler mScheduler;
 
     private UsbManager mUsbManager;
     private UsbDevice mDevice;
     private UsbSerialDriver mDriver;
     private UsbSerialPort mPort;
 
-    // state field
-    private boolean connected = false;
-
-    private RadarEventListener mListener;
-
     // todo checkout vendor and product id
     private final int D2G_VENDOR_ID = 1419;
     private final int D2G_PRODUCT_ID = 88;
 
-    // msg type
-    public static final int MT_GET_TARGETS = 110;
 
-    public D2GRadar() {
+    public RadarManager(Context context) {
+        this.context = context;
+
         mEpZero = new EndpointZero();
         mEpBase = new EndpointRadarBase();
         mEpTargetDetect = new EndpointTargetDetection();
     }
 
-    public boolean connect(Context context) {
-        mUsbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
-        HashMap<String, UsbDevice> devList = mUsbManager.getDeviceList();
-        boolean found = false;
+    //
+    public void registerListener(RadarEventListener listener, Radar radar, RadarConfiguration config) {
+        connect();
 
+        mMsgPipe = new MessagePipeline(mPort, listener);
+        mMsgPipe.start();
+        mScheduler = new CommandScheduler();
+        mScheduler.start();
+
+        // radar configuration
+    }
+
+
+
+    public void unregisterListener(RadarEventListener listener) {
+        //
+        mScheduler.terminate();
+
+        untrigger();
+
+        mMsgPipe.terminate();
+
+        disconnect();
+    }
+
+    //TODO try to throw some errors
+    private boolean connect() {
+        mUsbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+
+        // 1. search target device
+        boolean found = false;
+        HashMap<String, UsbDevice> devList = mUsbManager.getDeviceList();
         for (Map.Entry<String, UsbDevice> entry : devList.entrySet()) {
             UsbDevice device = entry.getValue();
             if (device.getVendorId() == D2G_VENDOR_ID &&
@@ -71,10 +99,11 @@ public class D2GRadar {
         }
 
         if (!found) {
-            Log.e(TAG, "<devExist> device not found.");
+            Log.e(TAG, "no device found.");
             return false;
         }
 
+        // 2. build and configure COM port
         mDriver = new UsbSerialDriver(mUsbManager, mDevice);
         int portNum = mDriver.requestPort();
         mPort = mDriver.getPort(portNum);
@@ -87,17 +116,10 @@ public class D2GRadar {
                     UsbSerialConstant.PARITY_NONE
             );
         } catch (IOException e) {
-            Log.d(TAG, "Port open failed.");
+            Log.e(TAG, "COM port open failed.");
             return false;
         }
-        Log.d(TAG, "Port open succeed.");
 
-        connected = true;
-
-        mParser = new MessageParser(mListener);
-        mParser.start();
-        mMsgPipe = new MessagePipeline(mPort, mParser);
-        mMsgPipe.start();
         return true;
     }
 
@@ -106,14 +128,18 @@ public class D2GRadar {
         mDriver.releasePort(mPort.getPortNumber());
     }
 
-    public void run() {
+    public void trigger() {
         Command cmd = new Command(mEpBase, mEpBase.setAutomaticFrameTrigger(100000));
         mMsgPipe.addCommand(cmd);
     }
 
-    public void stop() {
+    private void untrigger() {
         Command cmd = new Command(mEpBase, mEpBase.setAutomaticFrameTrigger(0));
         mMsgPipe.addCommand(cmd);
+    }
+
+    private void configure() {
+
     }
 
     public void getTargets() {
@@ -122,12 +148,16 @@ public class D2GRadar {
     }
 
     public void getTargetsRepeat(int interval) {
-        Command cmd = new Command(mEpTargetDetect, "GET_TARGETS", true, interval);
-        ProtocolWorker worker = new ProtocolWorker(mListener, mMsgPipe, cmd);
-        AsyncTask.execute(worker);
-    }
+        mScheduler.setInterval(interval);
+        mScheduler.addCommand(new Runnable() {
+            @Override
+            public void run() {
+                Command cmd = new Command(mEpTargetDetect, mEpTargetDetect.getTargets());
+                mMsgPipe.addCommand(cmd);
+            }
+        });
+        Log.e(TAG, "getTargetsRepeat() entered.");
 
-    public boolean isConnected() {
-        return connected;
+
     }
 }

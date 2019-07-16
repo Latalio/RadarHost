@@ -1,14 +1,17 @@
 package com.la.radarhost.comlib;
 
+import android.util.Log;
+
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class MessageParser extends Thread {
+    private final String TAG = MessageParser.class.getSimpleName();
 
     private Queue<Command> mCmdQueue = new LinkedList<>();
 
     private RadarEventListener mListener;
-    private boolean finish = false;
+    private boolean terminate = false;
 
     public MessageParser(RadarEventListener listener) {
         mListener = listener;
@@ -17,13 +20,14 @@ public class MessageParser extends Thread {
     @Override
     public void run() {
         Command cmd;
-        for(;finish;) {
+        for(;!terminate;) {
             if ((cmd = mCmdQueue.poll()) != null) {
                 // 1. parse
                 // 2. callback
                 if (cmd.msg == null) {
                     mListener.onRadarChanged(RadarEvent.EVENT_TIMEOUT);
                 } else {
+                    Log.e(TAG, "Received new message.");
                     RadarEvent event = new RadarEvent();
                     cmd.ep.parsePayload(cmd.msg.payload, event);
                     mListener.onRadarChanged(event);
@@ -36,7 +40,7 @@ public class MessageParser extends Thread {
         return mCmdQueue.offer(cmd);
     }
 
-    public void finish() {
-        finish = true;
+    public void terminate() {
+        terminate = true;
     }
 }

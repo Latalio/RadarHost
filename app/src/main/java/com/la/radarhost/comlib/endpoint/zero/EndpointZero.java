@@ -2,6 +2,7 @@ package com.la.radarhost.comlib.endpoint.zero;
 
 import android.os.Message;
 
+import com.la.radarhost.comlib.RadarEvent;
 import com.la.radarhost.comlib.endpoint.Endpoint;
 import com.la.radarhost.comlib.protocol.MessageInfo;
 import com.la.radarhost.comlib.protocol.Protocol;
@@ -18,12 +19,9 @@ public class EndpointZero extends Endpoint {
         minVersion  = 0;
         maxVersion  = 1;
         description = "ifxRadar EPZero";
-        commands = new HashMap<String, byte[]>() {{
-            put("QUERY_ENDPOINT_INFO", MSG_QUERY_ENDPOINT_INFO);
-        }};
     }
 
-    public void parsePayload(byte[] payload, Message msg) {
+    public void parsePayload(byte[] payload, RadarEvent event) {
 
     }
 
