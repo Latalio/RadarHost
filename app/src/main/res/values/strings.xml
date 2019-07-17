@@ -2,11 +2,11 @@
     <string name="app_name">RadarHost</string>
 
     <string name="cm">cm</string>
-    
-    
+
     <!--DSP Setting-->
-    <string name="range_mvg_avg_length">距离均值滤波长度</string>
-    <string name="range_thresh_type">距离阈值类型</string>
-    <string name="min_range_cm">最小距离阈值</string>
-    <string name="max_range_cm">最大距离阈值</string>
+    <string name="title_dsp_setting">DSP Settings</string>
+    <string name="range_mvg_avg_length">average filter length for range</string>
+    <string name="range_thresh_type">range threshold type</string>
+    <string name="min_range_cm">min range</string>
+    <string name="max_range_cm">max range</string>
 </resources>

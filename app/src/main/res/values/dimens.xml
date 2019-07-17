@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="setting_label_max_width">180dp</dimen>
+    <dimen name="setting_param_max_width">40dp</dimen>
+</resources>

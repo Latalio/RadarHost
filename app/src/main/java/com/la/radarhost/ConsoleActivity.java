@@ -6,7 +6,10 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.PopupMenu;
@@ -20,14 +23,15 @@ import com.la.radarhost.comlib.endpoint.targetdetection.TargetInfo;
 public class ConsoleActivity extends AppCompatActivity implements RadarEventListener {
     private final static String TAG = ConsoleActivity.class.getSimpleName();
 
-
     //todo extend the general Text to a specific one
     // view-about
     private TextView mTxtState;
-    private static TextView mTxtTargets;
+    private TextView mTxtTargets;
     private Button mBtnRun;
     private Button mBtnTargets;
-    private static RadiusVariationView mViewRadius;
+    private RadiusVariationView mViewRadius;
+    private LayoutInflater mInflater;
+    private ViewGroup mContentview;
 
     private Button mBtnDsp;
 
@@ -41,6 +45,9 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);//去掉标题栏
         setContentView(R.layout.main_dparams);
 
+        mInflater = getLayoutInflater();
+        mContentview = (ViewGroup)findViewById(R.id.rootlayout);
+
         mBtnRun = findViewById(R.id.btn_run);
         mBtnTargets = findViewById(R.id.btn_targets);
         mTxtState = findViewById(R.id.txt_state);
@@ -48,16 +55,10 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
         mViewRadius = findViewById(R.id.view_radius);
 
         mBtnDsp = findViewById(R.id.btn_dsp);
+        mBtnDsp.setOnClickListener(new BtnDspListener());
 
         mBtnRun.setOnClickListener(new BtnRunListener());
         mBtnTargets.setOnClickListener(new BtnTargetsListener());
-
-        mSensor = new RadarManager(this);
-        if (!mSensor.connect(this)) {
-            Log.e(TAG, "mSensor connection failed.");
-            Intent intent = new Intent(this, NoDevActivity.class);
-            startActivity(intent);
-        }
 
         // things need to do here
         // 1.check device's existence
@@ -143,38 +144,13 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
     private class BtnDspListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            PopupWindow window = new PopupWindow();
-            }
+            View view = mInflater.inflate(R.layout.setting_dsp, null);
+            PopupWindow window = new PopupWindow(view, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.showAtLocation(mContentview, Gravity.CENTER, 0,0);
         }
     }
-
-    private class MsgHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case RadarManager.MT_GET_TARGETS:
-                    TargetInfo[] targets = (TargetInfo[])msg.obj;
-                    StringBuilder sb = new StringBuilder();
-                    for(TargetInfo target:targets) {
-                        sb.append("id: ");
-                        sb.append(target.getTargetID());
-                        sb.append("\ndistance: ");
-                        sb.append(target.getRadius());
-                        sb.append("\nspeed: ");
-                        sb.append(target.getRadial_speed());
-                        sb.append("--------------------\n");
-                    }
-                    mTxtTargets.setText(sb.toString());
-
-                    mViewRadius.update(targets[0].getRadius());
-                    break;
-                default:
-                    break;
-            }
-
-        }
-    }
-
-
-
 }
+
+
+
+
