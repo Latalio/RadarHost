@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.PopupMenu;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.la.radarhost.comlib.RadarEvent;
@@ -28,7 +29,7 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
     private Button mBtnTargets;
     private static RadiusVariationView mViewRadius;
 
-    private PopupMenu
+    private Button mBtnDsp;
 
 
     // radar-about
@@ -45,6 +46,8 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
         mTxtState = findViewById(R.id.txt_state);
         mTxtTargets = findViewById(R.id.txt_targets);
         mViewRadius = findViewById(R.id.view_radius);
+
+        mBtnDsp = findViewById(R.id.btn_dsp);
 
         mBtnRun.setOnClickListener(new BtnRunListener());
         mBtnTargets.setOnClickListener(new BtnTargetsListener());
@@ -110,12 +113,10 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
         public void onClick(View v) {
             if (mBtnRun.isActivated()) {
                 Log.e(TAG, "<runBtn onClick> finish");
-                mSensor.stop();
                 mBtnRun.setActivated(false);
                 mBtnRun.setText("Run");
             } else {
                 Log.e(TAG, "<runBtn onClick> start");
-                mSensor.run();
                 mBtnRun.setActivated(true);
                 mBtnRun.setText("Running");
             }
@@ -135,6 +136,14 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
                 mSensor.getTargetsRepeat(1000); //1000ms = 1s
                 mBtnTargets.setActivated(true);
 //                mBtnTargets.setText("Running");
+            }
+        }
+    }
+
+    private class BtnDspListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            PopupWindow window = new PopupWindow();
             }
         }
     }
