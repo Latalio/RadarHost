@@ -1,5 +1,10 @@
 package com.la.radarhost.comlib.endpoint.targetdetection;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
 public class TargetInfo {
     int targetID;           /**< An unique ID of that target. */
 
@@ -18,54 +23,4 @@ public class TargetInfo {
     float elevation_speed;  /**< The change of elevation angle per second. */
 
     final static int SIZE = 32;    /**< 1*sizeof(int)+7*sizeof(float) = 4Bytes+7*4Bytes = 32Bytes*/
-
-    public TargetInfo(int targetID,
-                      float level,
-                      float radius,
-                      float azimuth,
-                      float elevation,
-                      float radial_speed,
-                      float azimuth_speed,
-                      float elevation_speed) {
-        this.targetID = targetID;
-        this.level = level;
-        this.radius = radius;
-        this.azimuth = azimuth;
-        this.elevation = elevation;
-        this.radial_speed = radial_speed;
-        this.azimuth_speed = azimuth_speed;
-        this.elevation_speed = elevation_speed;
-    }
-
-    public int getTargetID() {
-        return targetID;
-    }
-
-    public float getLevel() {
-        return level;
-    }
-
-    public float getRadius() {
-        return radius;
-    }
-
-    public float getAzimuth() {
-        return azimuth;
-    }
-
-    public float getElevation() {
-        return elevation;
-    }
-
-    public float getRadial_speed() {
-        return radial_speed;
-    }
-
-    public float getAzimuth_speed() {
-        return azimuth_speed;
-    }
-
-    public float getElevation_speed() {
-        return elevation_speed;
-    }
 }

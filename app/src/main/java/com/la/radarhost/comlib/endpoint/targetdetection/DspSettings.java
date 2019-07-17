@@ -1,6 +1,11 @@
 package com.la.radarhost.comlib.endpoint.targetdetection;
 
-public class DSPSettings {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class DspSettings {
     short range_mvg_avg_length;	/**< Moving average filter LENGTH used for range */
     short range_thresh_type;	/**< Rang ethreshold type is constant & Adaptive */
 

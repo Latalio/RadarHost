@@ -77,7 +77,7 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
     public void onRadarChanged(RadarEvent event) {
         Log.e(TAG, "new event occur");
         switch (event.type) {
-            case RadarEvent.TYPE_TARGETS:
+            case RadarEvent.TYPE_GET_TARGETS:
                 TargetInfo[] targets = (TargetInfo[])event.obj;
                 StringBuilder sb = new StringBuilder();
                 for(TargetInfo target:targets) {

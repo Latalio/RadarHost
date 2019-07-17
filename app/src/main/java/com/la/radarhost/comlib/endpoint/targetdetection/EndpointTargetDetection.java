@@ -1,7 +1,5 @@
 package com.la.radarhost.comlib.endpoint.targetdetection;
 
-import android.os.Message;
-
 import com.la.radarhost.comlib.RadarEvent;
 import com.la.radarhost.comlib.endpoint.Endpoint;
 import com.la.radarhost.comlib.protocol.Protocol;
@@ -30,11 +28,10 @@ public class EndpointTargetDetection extends Endpoint {
     public void parsePayload(byte[] payload, RadarEvent event) {
         byte msgTag = (byte)Protocol.readPayload(payload,0,1);
         switch (msgTag) {
-            case MSG_GET_TARGETS:
-                parseTargetInfo(payload, event);
-                break;
-            default:
-                break;
+            case MSG_GET_DSP_SETTINGS: parseDspSettings(payload, event); break;
+            case MSG_GET_TARGETS: parseTargetInfo(payload, event); break;
+            case MSG_GET_RANGE_THRESHOLD: parseRangeThreshold(payload, event); break;
+            default: break;
         }
     }
 
@@ -70,22 +67,125 @@ public class EndpointTargetDetection extends Endpoint {
                 targets[i] = targetInfo;
             }
         }
-        event.type = RadarEvent.TYPE_TARGETS;
+        event.type = RadarEvent.TYPE_GET_TARGETS;
         event.obj = targets;
     }
 
-    private void parseDSPSettings(byte[] payload, Message msg) {
-        //todo
+    private void parseDspSettings(byte[] payload, RadarEvent event) {
+        short range_mvg_avg_length;
+        int min_range_cm;
+        int max_range_cm;
+        int min_speed_kmh;
+        int max_speed_kmh;
+        int min_angle_degree;
+        int max_angle_degree;
+        int range_threshold;
+        int speed_threshold;
+        int adaptive_offset;
+        short enable_tracking;
+        short num_of_tracks;
+        short median_filter_length;
+        short enable_mti_filter;
+        int mti_filter_length;
+        short range_thresh_type;
+
+        //B0 MSG_GET_DSP_SETTINGS
+        range_mvg_avg_length = (short)Protocol.readPayload(payload,1,1);
+        min_range_cm = (int)Protocol.readPayload(payload,2,2);
+        max_range_cm = (int)Protocol.readPayload(payload,4,2);
+        min_speed_kmh = (int)Protocol.readPayload(payload,6,2);
+        max_speed_kmh = (int)Protocol.readPayload(payload,8,2);
+        min_angle_degree = (int)Protocol.readPayload(payload,10,2);
+        max_angle_degree = (int)Protocol.readPayload(payload,12,2);
+        range_threshold = (int)Protocol.readPayload(payload,14,2);
+        speed_threshold = (int)Protocol.readPayload(payload,16,2);
+
+        if (payload.length == 27) {
+            adaptive_offset = (int)Protocol.readPayload(payload,18,2);
+            enable_tracking = (short)Protocol.readPayload(payload,20,1);
+            num_of_tracks = (short)Protocol.readPayload(payload,21,1);
+            median_filter_length = (short)Protocol.readPayload(payload,22,1);
+            enable_mti_filter = (short)Protocol.readPayload(payload,23,1);
+            mti_filter_length = (int)Protocol.readPayload(payload,24,2);
+            range_thresh_type = (short)Protocol.readPayload(payload,26,1);
+        } else {
+            adaptive_offset = 0;
+            enable_tracking = 0;
+            num_of_tracks = 1;
+            median_filter_length = 5;
+            enable_mti_filter = 0;
+            mti_filter_length = 10;
+            range_thresh_type = 0;
+        }
+
+        event.type = RadarEvent.TYPE_GET_DSP_SETTINGS;
+        event.obj = new DspSettings(
+                range_mvg_avg_length,
+                range_thresh_type,
+                min_range_cm,
+                max_range_cm,
+                min_speed_kmh,
+                max_speed_kmh,
+                min_angle_degree,
+                max_angle_degree,
+                range_threshold,
+                speed_threshold,
+                adaptive_offset,
+                enable_tracking,
+                num_of_tracks,
+                median_filter_length,
+                enable_mti_filter,
+                mti_filter_length
+        );
+
+
 
     }
 
-    private void parseRangeThreshold(byte[] payload, Message msg) {
-        //todo
+    private void parseRangeThreshold(byte[] payload, RadarEvent event) {
+        int threshold = (int)Protocol.readPayload(payload,1,2);
+        event.type = RadarEvent.TYPE_GET_RANGE_THRESHOLD;
+        event.obj = threshold;
+    }
 
+    /**
+     * Command generation methods
+     */
+
+    public byte[] getDspSettings() {
+        return wrapCommand(MSG_GET_DSP_SETTINGS);
+    }
+
+    public byte[] setDspSettings(DspSettings settings) {
+        byte[] cmd = new byte[27];
+
+        Protocol.writePayload(cmd,MSG_GET_DSP_SETTINGS);
+        Protocol.writePayload(cmd,1,settings.range_mvg_avg_length);
+        Protocol.writePayload(cmd,2,settings.min_range_cm);
+        Protocol.writePayload(cmd,4,settings.max_range_cm);
+        Protocol.writePayload(cmd,6,settings.min_speed_kmh);
+        Protocol.writePayload(cmd,8,settings.max_range_cm);
+        Protocol.writePayload(cmd,10,settings.min_angle_degree);
+        Protocol.writePayload(cmd,12,settings.max_angle_degree);
+        Protocol.writePayload(cmd,14,settings.range_threshold);
+        Protocol.writePayload(cmd,16,settings.speed_threshold);
+        Protocol.writePayload(cmd,18,settings.adaptive_offset);
+        Protocol.writePayload(cmd,20,settings.enable_tracking);
+        Protocol.writePayload(cmd,21,settings.num_of_tracks);
+        Protocol.writePayload(cmd,22,settings.median_filter_length);
+        Protocol.writePayload(cmd,23,settings.enable_mti_filter);
+        Protocol.writePayload(cmd,24,settings.mti_filter_length);
+        Protocol.writePayload(cmd,26,settings.range_thresh_type);
+
+        return wrapCommand(cmd);
     }
 
     public byte[] getTargets() {
         return wrapCommand(MSG_GET_TARGETS);
+    }
+
+    public byte[] getRangeThreshold() {
+        return wrapCommand(MSG_GET_RANGE_THRESHOLD);
     }
 
 }
