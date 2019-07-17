@@ -57,7 +57,7 @@ public class RadarManager {
     }
 
     //
-    public void registerListener(RadarEventListener listener, Radar radar, RadarConfiguration config) {
+    public void registerListener(RadarEventListener listener, Radar radar, RadarConfiguration[] configs) {
         connect();
 
         mMsgPipe = new MessagePipeline(mPort, listener);
@@ -79,6 +79,10 @@ public class RadarManager {
         mMsgPipe.terminate();
 
         disconnect();
+    }
+
+    public void updateConfiguration(RadarConfiguration config) {
+
     }
 
     //TODO try to throw some errors

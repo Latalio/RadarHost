@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.PopupWindow;
@@ -34,6 +35,7 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
     private ViewGroup mContentview;
 
     private Button mBtnDsp;
+    private BaseAdapter
 
 
     // radar-about

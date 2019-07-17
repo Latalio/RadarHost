@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="setting_label_max_width">180dp</dimen>
+    <dimen name="setting_label_max_width">120dp</dimen>
     <dimen name="setting_param_max_width">40dp</dimen>
+    
+    <dimen name="setting_label_text_size">12sp</dimen>
+    <dimen name="setting_param_text_size">12sp</dimen>
+    
+    <dimen name="setting_label_param_gap">4dp</dimen>
 </resources>
