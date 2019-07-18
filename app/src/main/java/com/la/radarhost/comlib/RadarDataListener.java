@@ -1,6 +1,6 @@
 package com.la.radarhost.comlib;
 
-public interface RadarEventListener {
+public interface RadarDataListener {
 
-    void onRadarChanged(RadarEvent event);
+    void onDataChanged(RadarData data);
 }

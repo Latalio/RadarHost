@@ -1,13 +1,7 @@
 package com.la.radarhost.comlib.endpoint.zero;
 
-import android.os.Message;
-
 import com.la.radarhost.comlib.RadarEvent;
 import com.la.radarhost.comlib.endpoint.Endpoint;
-import com.la.radarhost.comlib.protocol.MessageInfo;
-import com.la.radarhost.comlib.protocol.Protocol;
-
-import java.util.HashMap;
 
 public class EndpointZero extends Endpoint {
 

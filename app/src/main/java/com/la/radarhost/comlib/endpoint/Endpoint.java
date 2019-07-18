@@ -1,5 +1,6 @@
 package com.la.radarhost.comlib.endpoint;
 
+import com.la.radarhost.comlib.Radar;
 import com.la.radarhost.comlib.RadarEvent;
 import com.la.radarhost.comlib.protocol.Protocol;
 
@@ -12,6 +13,8 @@ public abstract class Endpoint {
     public int minVersion;
     public int maxVersion;
     public String description;
+
+    public final static short STATUS_SUCCESS = (short)0x0000;
 
 
     public abstract void parsePayload(byte[] payload, RadarEvent event);
@@ -39,6 +42,12 @@ public abstract class Endpoint {
     public byte[] wrapCommand(byte cmd) {
         byte[] cmdArray = {cmd};
         return wrapCommand(cmdArray);
+    }
+
+    public void parseStatus(byte[] status, RadarEvent event) {
+        StatusCode statusCode = new StatusCode((short)(status[1]<<8|status[0]));
+        event.obj = statusCode;
+        event.status = statusCode.status_code == Endpoint.STATUS_SUCCESS;
     }
 
 

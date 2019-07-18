@@ -3,6 +3,7 @@ package com.la.radarhost.comlib;
 public class RadarEvent {
     public int type;
     public Object obj;
+    public boolean status;
 
 
     public RadarEvent(int type) {

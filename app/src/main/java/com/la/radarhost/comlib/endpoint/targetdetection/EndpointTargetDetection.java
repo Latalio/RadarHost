@@ -37,24 +37,25 @@ public class EndpointTargetDetection extends Endpoint {
 
     private static void parseTargetInfo(byte[] payload, RadarEvent event) {
         short numTargets = (short)Protocol.readPayload(payload,1,1);
-        TargetInfo[] targets = new TargetInfo[numTargets];
+        Target[] targets = new Target[numTargets];
 
         // B0 MSG_GET_TARGETS
         // B1 number of targets
-        if (payload.length == numTargets * TargetInfo.SIZE + 2) {
+        if (payload.length == numTargets * Target.SIZE + 2) {
             for(short i = 0;i<numTargets;i++) {
-                int targetID = (int)Protocol.readPayload(payload,2+i*TargetInfo.SIZE,4);
-                float level = (float)Protocol.readPayload(payload,6+i*TargetInfo.SIZE,4);
+                int targetID = (int)Protocol.readPayload(payload,2+i*Target.SIZE,4);
+                float level = (float)Protocol.readPayload(payload,6+i*Target.SIZE,4);
                 float radius = Float.intBitsToFloat(
-                        (int)Protocol.readPayload(payload,10+i*TargetInfo.SIZE,4));
-                float azimuth = (float)Protocol.readPayload(payload,14+i*TargetInfo.SIZE,4);
-                float elevation = (float)Protocol.readPayload(payload,18+i*TargetInfo.SIZE,4);
+                        (int)Protocol.readPayload(payload,10+i*Target.SIZE,4));
+                float azimuth = (float)Protocol.readPayload(payload,14+i*Target.SIZE,4);
+                float elevation = (float)Protocol.readPayload(payload,18+i*Target.SIZE,4);
                 float radial_speed = Float.intBitsToFloat(
-                        (int)Protocol.readPayload(payload,22+i*TargetInfo.SIZE,4));
-                float azimuth_speed = (float)Protocol.readPayload(payload,26+i*TargetInfo.SIZE,4);
-                float elevation_speed = (float)Protocol.readPayload(payload,30+i*TargetInfo.SIZE,4);
+                        (int)Protocol.readPayload(payload,22+i*Target.SIZE,4));
+                float azimuth_speed = (float)Protocol.readPayload(payload,26+i*Target.SIZE,4);
+                float elevation_speed = (float)Protocol.readPayload(payload,30+i*Target.SIZE,4);
 
-                TargetInfo targetInfo = new TargetInfo(
+
+                targets[i] = new Target(
                         targetID,
                         level,
                         radius,
@@ -64,11 +65,10 @@ public class EndpointTargetDetection extends Endpoint {
                         azimuth_speed,
                         elevation_speed
                 );
-                targets[i] = targetInfo;
             }
         }
         event.type = RadarEvent.TYPE_GET_TARGETS;
-        event.obj = targets;
+        event.obj = new Targets(targets);
     }
 
     private void parseDspSettings(byte[] payload, RadarEvent event) {

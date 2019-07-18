@@ -47,7 +47,7 @@ public class MessagePipeline extends Thread{
 
 
 
-    public MessagePipeline(UsbSerialPort port, RadarEventListener listener) {
+    public MessagePipeline(UsbSerialPort port, RadarManager.RadarEventListener listener) {
         mPort = port;
         mParser = new MessageParser(listener);
         mParser.start();
@@ -115,10 +115,9 @@ public class MessagePipeline extends Thread{
                 msgBytes[1] == (byte) epNum) {
                     checkLength =  (msgBytes[2] | msgBytes[3]<<8) + 4+2+4; //msg HEADER + msg TAIL + status
                     mCheckState = CheckState.LENGTH;
-//                    Log.d("TAG", "HEADER pass");
-//                    Log.d("TAG", "check LENGTH: " + checkLength);
                 } else if (msgBytes[0] == Protocol.CNST_STARTBYTE_STATUS &&
                         msgBytes[1] == (byte) epNum && mCheckBuffer.length() == 4){
+                    // Type 1: status message
                     currCmd.msg = new Message(
                             Arrays.copyOfRange(msgBytes,mCheckBuffer.length()-2,mCheckBuffer.length())
                     );
@@ -128,7 +127,6 @@ public class MessagePipeline extends Thread{
                     break;
                 }
             case LENGTH:
-//                Log.d("TAG", "checkbuf LENGTH: " + mCheckBuffer.LENGTH());
                 if (mCheckBuffer.length() >= checkLength) {
                     mCheckState = CheckState.TAIL;
                     Log.d("TAG", "LENGTH pass");
@@ -142,7 +140,7 @@ public class MessagePipeline extends Thread{
                     msgBytes[tail-3] == Protocol.CNST_STARTBYTE_STATUS &&
                     msgBytes[tail-2] == (byte) epNum
                 ) {
-//                    Log.d("TAG", "TAIL pass");
+                    // Type 2: payload message
                     currCmd.msg = new Message(
                             Arrays.copyOfRange(msgBytes,4,checkLength-6),   // msgTail(2)+status(4)=6;
                             Arrays.copyOfRange(msgBytes,checkLength-4,checkLength)

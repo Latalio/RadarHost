@@ -1,11 +1,15 @@
 package com.la.radarhost.comlib.endpoint.targetdetection;
 
+import com.la.radarhost.comlib.RadarConfig;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-public class DspSettings {
+@NoArgsConstructor
+public class DspSettings implements RadarConfig {
     short range_mvg_avg_length;	/**< Moving average filter LENGTH used for range */
     short range_thresh_type;	/**< Rang ethreshold type is constant & Adaptive */
 
@@ -26,4 +30,9 @@ public class DspSettings {
     short enable_mti_filter;    /**< Enable / Disable MTI filter to remove static targets */
 
     int mti_filter_length;	    /**< Length of MTI filter in terms of frame count after which static target should be killed */
+
+    @Override
+    public int getConfigType() {
+        return RadarConfig.TYPE_DSP_SETTINGS;
+    }
 }

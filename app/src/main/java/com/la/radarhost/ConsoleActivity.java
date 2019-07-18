@@ -1,8 +1,5 @@
 package com.la.radarhost;
 
-import android.content.Intent;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,15 +10,16 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import com.la.radarhost.comlib.RadarData;
 import com.la.radarhost.comlib.RadarEvent;
-import com.la.radarhost.comlib.RadarEventListener;
+import com.la.radarhost.comlib.RadarDataListener;
+import com.la.radarhost.comlib.RadarManager;
 import com.la.radarhost.comlib.endpoint.targetdetection.TargetInfo;
 
-public class ConsoleActivity extends AppCompatActivity implements RadarEventListener {
+public class ConsoleActivity extends AppCompatActivity implements RadarDataListener {
     private final static String TAG = ConsoleActivity.class.getSimpleName();
 
     //todo extend the general Text to a specific one
@@ -77,25 +75,10 @@ public class ConsoleActivity extends AppCompatActivity implements RadarEventList
     }
 
     @Override
-    public void onRadarChanged(RadarEvent event) {
+    public void onDataChanged(RadarData data) {
         Log.e(TAG, "new event occur");
-        switch (event.type) {
-            case RadarEvent.TYPE_GET_TARGETS:
-                TargetInfo[] targets = (TargetInfo[])event.obj;
-                StringBuilder sb = new StringBuilder();
-                for(TargetInfo target:targets) {
-                    sb.append("id: ");
-                    sb.append(target.getTargetID());
-                    sb.append("\ndistance: ");
-                    sb.append(target.getRadius());
-                    sb.append("\nspeed: ");
-                    sb.append(target.getRadial_speed());
-                    sb.append("--------------------\n");
-                }
-//                mTxtTargets.setText(sb.toString());
-                Log.e(TAG, sb.toString());
+        switch (data.getDataType()) {
 
-//                mViewRadius.update(targets[0].getRadius());
                 break;
             default:
                 break;

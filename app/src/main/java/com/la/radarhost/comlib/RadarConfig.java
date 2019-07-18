@@ -1,6 +1,6 @@
 package com.la.radarhost.comlib;
 
-public interface RadarConfiguration {
+public interface RadarConfig {
 
     int getConfigType();
 
