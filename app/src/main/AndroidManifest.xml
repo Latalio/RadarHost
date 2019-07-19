@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <receiver android:name=".DevAttachedReceiver">
+        <receiver android:name="com.la.radarhost.DevAttachedReceiver">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
@@ -19,8 +19,8 @@
                 android:resource="@xml/dev_filter" />
         </receiver>
 
-        <activity android:name=".NoDevActivity"></activity>
-        <activity android:name=".ConsoleActivity">
+        <activity android:name="com.la.radarhost.NoDevActivity"></activity>
+        <activity android:name="com.la.radarhost.ConsoleActivity">
 
             <!-- <activity android:name=".MainActivity"> -->
             <intent-filter>

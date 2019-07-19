@@ -1,6 +1,8 @@
 package com.la.radarhost;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.res.XmlResourceParser;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -8,16 +10,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import com.la.radarhost.comlib.RadarData;
-import com.la.radarhost.comlib.RadarEvent;
-import com.la.radarhost.comlib.RadarDataListener;
-import com.la.radarhost.comlib.RadarManager;
-import com.la.radarhost.comlib.endpoint.targetdetection.TargetInfo;
+import com.la.radarhost.R;
+
+import com.la.radar.RadarData;
+import com.la.radar.RadarDataListener;
+import com.la.radar.RadarManager;
+
+import org.xml.sax.XMLReader;
+
 
 public class ConsoleActivity extends AppCompatActivity implements RadarDataListener {
     private final static String TAG = ConsoleActivity.class.getSimpleName();
@@ -33,7 +37,6 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
     private ViewGroup mContentview;
 
     private Button mBtnDsp;
-    private BaseAdapter
 
 
     // radar-about
@@ -46,7 +49,7 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
         setContentView(R.layout.main_dparams);
 
         mInflater = getLayoutInflater();
-        mContentview = (ViewGroup)findViewById(R.id.rootlayout);
+        mContentview = findViewById(R.id.rootlayout);
 
         mBtnRun = findViewById(R.id.btn_run);
         mBtnTargets = findViewById(R.id.btn_targets);
@@ -77,12 +80,12 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
     @Override
     public void onDataChanged(RadarData data) {
         Log.e(TAG, "new event occur");
-        switch (data.getDataType()) {
-
-                break;
-            default:
-                break;
-        }
+//        switch (data.getDataType()) {
+//
+//                break;
+//            default:
+//                break;
+//        }
     }
 
     @Override
@@ -129,9 +132,12 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
     private class BtnDspListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            View view = mInflater.inflate(R.layout.setting_dsp, null);
-            PopupWindow window = new PopupWindow(view, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            window.showAtLocation(mContentview, Gravity.CENTER, 0,0);
+//            View view = mInflater.inflate(R.layout.setting_dsp, null);
+//            PopupWindow window = new PopupWindow(view, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+//            window.setFocusable(true);
+//            window.showAtLocation(mContentview, Gravity.CENTER, 0,0);
+            DspSettingWindow window = new DspSettingWindow(mInflater);
+            window.show(mContentview);
         }
     }
 }

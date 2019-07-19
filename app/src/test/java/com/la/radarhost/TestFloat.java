@@ -1,10 +1,9 @@
 package com.la.radarhost;
 
-import com.la.radarhost.comlib.protocol.Protocol;
+import com.la.radar.protocol.Protocol;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.IOException;
 
 public class TestFloat {
     public static void main(String[] args) {

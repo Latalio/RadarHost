@@ -1,4 +1,4 @@
-package com.la.radarhost;
+package com.la.radar;
 
 import android.content.Context;
 import androidx.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.la.radarhost", appContext.getPackageName());
+        assertEquals("com.la.radar.test", appContext.getPackageName());
     }
 }
