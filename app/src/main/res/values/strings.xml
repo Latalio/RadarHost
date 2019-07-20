@@ -2,6 +2,8 @@
     <string name="app_name">RadarHost</string>
 
     <string name="cm">cm</string>
+    <string name="kmh">kmh</string>
+    <string name="degree">°</string>
 
     <!--DSP Setting-->
     <string name="title_dsp_setting">DSP Settings</string>
@@ -9,4 +11,16 @@
     <string name="range_thresh_type">range threshold type</string>
     <string name="min_range_cm">min range</string>
     <string name="max_range_cm">max range</string>
+    <string name="min_speed_kmh">min speed</string>
+    <string name="max_speed_kmh">max speed</string>
+    <string name="min_angle_degree">min angle</string>
+    <string name="max_angle_degree">max angle</string>
+    <string name="range_threshold">range threshold</string>
+    <string name="speed_threshold">speed threshold</string>
+    <string name="adaptive_offset">adaptive offset</string>
+    <string name="enable_tracking">enable tracking</string>
+    <string name="num_of_tracks">number of tracks</string>
+    <string name="median_filter_length">median filter length</string>
+    <string name="enable_mti_filter">enable MTI filter</string>
+    <string name="mti_filter_length">MTI filter length</string>
 </resources>

@@ -119,7 +119,7 @@ public class EndpointTargetDetection extends Endpoint {
         }
 
         event.type = RadarEvent.TYPE_GET_DSP_SETTINGS;
-        event.obj = new DspSetting(
+        event.obj = new DspConfig(
                 range_mvg_avg_length,
                 range_thresh_type,
                 min_range_cm,
@@ -156,7 +156,7 @@ public class EndpointTargetDetection extends Endpoint {
         return wrapCommand(MSG_GET_DSP_SETTINGS);
     }
 
-    public byte[] setDspSettings(DspSetting settings) {
+    public byte[] setDspSettings(DspConfig settings) {
         byte[] cmd = new byte[27];
 
         Protocol.writePayload(cmd,MSG_GET_DSP_SETTINGS);

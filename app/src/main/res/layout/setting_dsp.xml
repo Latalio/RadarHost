@@ -129,14 +129,14 @@
                         android:layout_gravity="center"
                         android:layout_marginEnd="@dimen/setting_label_param_gap"
                         android:maxWidth="@dimen/setting_label_maxwidth"
-                        android:text="@string/max_range_cm"
+                        android:text="@string/max_speed_kmh"
                         android:textSize="@dimen/setting_label_textsize" />
 
                     <EditText
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/cm"
+                        android:hint="@string/kmh"
                         android:inputType="number"
                         android:textSize="@dimen/setting_param_textsize" />
                 </TableRow>
@@ -151,14 +151,14 @@
                         android:layout_gravity="center"
                         android:layout_marginEnd="@dimen/setting_label_param_gap"
                         android:maxWidth="@dimen/setting_label_maxwidth"
-                        android:text="@string/max_range_cm"
+                        android:text="@string/max_speed_kmh"
                         android:textSize="@dimen/setting_label_textsize" />
 
                     <EditText
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/cm"
+                        android:hint="@string/kmh"
                         android:inputType="number"
                         android:textSize="@dimen/setting_param_textsize" />
                 </TableRow>
@@ -173,14 +173,14 @@
                         android:layout_gravity="center"
                         android:layout_marginEnd="@dimen/setting_label_param_gap"
                         android:maxWidth="@dimen/setting_label_maxwidth"
-                        android:text="@string/max_range_cm"
+                        android:text="@string/min_angle_degree"
                         android:textSize="@dimen/setting_label_textsize" />
 
                     <EditText
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/cm"
+                        android:hint="@string/degree"
                         android:inputType="number"
                         android:textSize="@dimen/setting_param_textsize" />
                 </TableRow>
@@ -195,14 +195,14 @@
                         android:layout_gravity="center"
                         android:layout_marginEnd="@dimen/setting_label_param_gap"
                         android:maxWidth="@dimen/setting_label_maxwidth"
-                        android:text="@string/max_range_cm"
+                        android:text="@string/max_angle_degree"
                         android:textSize="@dimen/setting_label_textsize" />
 
                     <EditText
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/cm"
+                        android:hint="@string/degree"
                         android:inputType="number"
                         android:textSize="@dimen/setting_param_textsize" />
                 </TableRow>
@@ -217,35 +217,13 @@
                         android:layout_gravity="center"
                         android:layout_marginEnd="@dimen/setting_label_param_gap"
                         android:maxWidth="@dimen/setting_label_maxwidth"
-                        android:text="@string/max_range_cm"
+                        android:text="@string/range_threshold"
                         android:textSize="@dimen/setting_label_textsize" />
 
                     <EditText
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/cm"
-                        android:inputType="number"
-                        android:textSize="@dimen/setting_param_textsize" />
-                </TableRow>
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginEnd="@dimen/setting_label_param_gap"
-                        android:maxWidth="@dimen/setting_label_maxwidth"
-                        android:text="@string/max_range_cm"
-                        android:textSize="@dimen/setting_label_textsize" />
-
-                    <EditText
-                        android:layout_width="100dp"
-                        android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:hint="@string/cm"
                         android:inputType="number"
                         android:textSize="@dimen/setting_param_textsize" />
                 </TableRow>
@@ -260,35 +238,13 @@
                         android:layout_gravity="center"
                         android:layout_marginEnd="@dimen/setting_label_param_gap"
                         android:maxWidth="@dimen/setting_label_maxwidth"
-                        android:text="@string/max_range_cm"
+                        android:text="@string/speed_threshold"
                         android:textSize="@dimen/setting_label_textsize" />
 
                     <EditText
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/cm"
-                        android:inputType="number"
-                        android:textSize="@dimen/setting_param_textsize" />
-                </TableRow>
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginEnd="@dimen/setting_label_param_gap"
-                        android:maxWidth="@dimen/setting_label_maxwidth"
-                        android:text="@string/max_range_cm"
-                        android:textSize="@dimen/setting_label_textsize" />
-
-                    <EditText
-                        android:layout_width="100dp"
-                        android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:hint="@string/cm"
                         android:inputType="number"
                         android:textSize="@dimen/setting_param_textsize" />
                 </TableRow>
@@ -303,14 +259,13 @@
                         android:layout_gravity="center"
                         android:layout_marginEnd="@dimen/setting_label_param_gap"
                         android:maxWidth="@dimen/setting_label_maxwidth"
-                        android:text="@string/max_range_cm"
+                        android:text="@string/adaptive_offset"
                         android:textSize="@dimen/setting_label_textsize" />
 
                     <EditText
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/cm"
                         android:inputType="number"
                         android:textSize="@dimen/setting_param_textsize" />
                 </TableRow>
@@ -324,14 +279,13 @@
                         android:layout_gravity="center"
                         android:layout_marginEnd="@dimen/setting_label_param_gap"
                         android:maxWidth="@dimen/setting_label_maxwidth"
-                        android:text="@string/max_range_cm"
+                        android:text="@string/enable_tracking"
                         android:textSize="@dimen/setting_label_textsize" />
 
                     <EditText
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/cm"
                         android:inputType="number"
                         android:textSize="@dimen/setting_param_textsize" />
                 </TableRow>
@@ -346,17 +300,17 @@
                         android:layout_gravity="center"
                         android:layout_marginEnd="@dimen/setting_label_param_gap"
                         android:maxWidth="@dimen/setting_label_maxwidth"
-                        android:text="@string/max_range_cm"
+                        android:text="@string/num_of_tracks"
                         android:textSize="@dimen/setting_label_textsize" />
 
                     <EditText
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/cm"
                         android:inputType="number"
                         android:textSize="@dimen/setting_param_textsize" />
                 </TableRow>
+
                 <TableRow
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
@@ -367,14 +321,55 @@
                         android:layout_gravity="center"
                         android:layout_marginEnd="@dimen/setting_label_param_gap"
                         android:maxWidth="@dimen/setting_label_maxwidth"
-                        android:text="@string/max_range_cm"
+                        android:text="@string/median_filter_length"
                         android:textSize="@dimen/setting_label_textsize" />
 
                     <EditText
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/cm"
+                        android:inputType="number"
+                        android:textSize="@dimen/setting_param_textsize" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginEnd="@dimen/setting_label_param_gap"
+                        android:maxWidth="@dimen/setting_label_maxwidth"
+                        android:text="@string/enable_mti_filter"
+                        android:textSize="@dimen/setting_label_textsize" />
+
+                    <EditText
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:inputType="number"
+                        android:textSize="@dimen/setting_param_textsize" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginEnd="@dimen/setting_label_param_gap"
+                        android:maxWidth="@dimen/setting_label_maxwidth"
+                        android:text="@string/mti_filter_length"
+                        android:textSize="@dimen/setting_label_textsize" />
+
+                    <EditText
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
                         android:inputType="number"
                         android:textSize="@dimen/setting_param_textsize" />
                 </TableRow>

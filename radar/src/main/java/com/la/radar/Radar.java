@@ -1,6 +1,6 @@
 package com.la.radar;
 
-import com.la.radar.endpoint.targetdetection.DspSetting;
+import com.la.radar.endpoint.targetdetection.DspConfig;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -10,23 +10,22 @@ public class Radar {
     // need a staged area
     private Queue<RadarConfig> stagedConfigQueue = new LinkedList<>();
 
-    DspSetting dspSetting = new DspSetting();
+    DspConfig dspConfig = new DspConfig();
 
     void updateConfig() {
         RadarConfig config = stagedConfigQueue.poll();
         if (config == null) return;
         switch (config.getConfigType()) {
             case RadarConfig.TYPE_DSP_SETTINGS:
-                dspSetting = (DspSetting)config; break;
+                dspConfig = (DspConfig)config; break;
             default: break;
         }
     }
 
-
     void updateConfig(RadarConfig config) {
         switch (config.getConfigType()) {
             case RadarConfig.TYPE_DSP_SETTINGS:
-                dspSetting = (DspSetting)config; break;
+                dspConfig = (DspConfig)config; break;
             default: break;
         }
     }
@@ -37,8 +36,8 @@ public class Radar {
         }
     }
 
-    public DspSetting getDspSetting() {
-        return dspSetting;
+    public DspConfig getDspConfig() {
+        return dspConfig;
     }
 
     public synchronized void stageConfig(RadarConfig config) {

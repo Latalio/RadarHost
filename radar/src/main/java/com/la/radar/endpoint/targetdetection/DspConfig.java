@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DspSetting implements RadarConfig {
+public class DspConfig implements RadarConfig {
     short range_mvg_avg_length = 0;	/**< Moving average filter LENGTH used for range */
     short range_thresh_type = 1;	/**< Rang ethreshold type is constant & Adaptive */
 
@@ -34,5 +34,28 @@ public class DspSetting implements RadarConfig {
     @Override
     public int getConfigType() {
         return RadarConfig.TYPE_DSP_SETTINGS;
+    }
+
+    @Override
+    public void setValue(String field, String value) {
+        switch (field) {
+            case "range_mvg_avg_length":
+                range_mvg_avg_length = Short.parseShort(value); break;
+            case "range_thresh_type":
+                range_thresh_type = Short.parseShort(value); break;
+            default: break;
+        }
+    }
+
+    @Override
+    public String getValue(String field) {
+        switch (field) {
+            case "range_mvg_avg_length":
+                return Short.toString(range_mvg_avg_length);
+            case "range_thresh_type":
+                return Short.toString(range_thresh_type);
+            default:
+                return null;
+        }
     }
 }

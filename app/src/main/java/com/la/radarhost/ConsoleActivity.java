@@ -2,25 +2,19 @@ package com.la.radarhost;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.res.XmlResourceParser;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import com.la.radarhost.R;
-
+import com.la.radar.Radar;
 import com.la.radar.RadarData;
 import com.la.radar.RadarDataListener;
 import com.la.radar.RadarManager;
-
-import org.xml.sax.XMLReader;
 
 
 public class ConsoleActivity extends AppCompatActivity implements RadarDataListener {
@@ -40,7 +34,27 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
 
 
     // radar-about
-    private RadarManager mSensor;
+    private RadarManager mRadarManager;
+    private Radar mRadar;
+
+    private final String[] FIELDS_DSP_CONFIG = {
+            "range_mvg_avg_length",
+            "range_thresh_type",
+            "min_range_cm",
+            "max_range_cm",
+            "min_speed_kmh",
+            "max_speed_kmh",
+            "min_angle_degree",
+            "max_angle_degree",
+            "range_threshold",
+            "speed_threshold",
+            "adaptive_offset",
+            "enable_tracking",
+            "num_of_tracks",
+            "median_filter_length",
+            "enable_mti_filter",
+            "mti_filter_length"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,18 +77,21 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
         mBtnRun.setOnClickListener(new BtnRunListener());
         mBtnTargets.setOnClickListener(new BtnTargetsListener());
 
-        // things need to do here
-        // 1.check device's existence
-        //  if exist then go on(go to 2)
-        //  el indicate the user to plug in the device
-        // 2.open the device (consider success or failure)
-        // 3.launch the MsgPipe
+        mRadarManager = new RadarManager(this);
+        mRadar = mRadarManager.getRadarInstance();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        mRadarManager.registerListener(this);
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mRadarManager.unregisterListener(this);
     }
 
     @Override
@@ -91,9 +108,6 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mSensor.disconnect();
-
-
 
     }
 
@@ -122,7 +136,6 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
 //                mBtnTargets.setText("Run");
             } else {
                 Log.e(TAG, "<btnTarget onClick> activated");
-                mSensor.getTargetsRepeat(1000); //1000ms = 1s
                 mBtnTargets.setActivated(true);
 //                mBtnTargets.setText("Running");
             }
@@ -132,12 +145,7 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
     private class BtnDspListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-//            View view = mInflater.inflate(R.layout.setting_dsp, null);
-//            PopupWindow window = new PopupWindow(view, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-//            window.setFocusable(true);
-//            window.showAtLocation(mContentview, Gravity.CENTER, 0,0);
-            DspSettingWindow window = new DspSettingWindow(mInflater);
-            window.show(mContentview);
+            new ConfigWindow(mInflater, mRadar, mRadarManager, FIELDS_DSP_CONFIG).show(mContentview);
         }
     }
 }

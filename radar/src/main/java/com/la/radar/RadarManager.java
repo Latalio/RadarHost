@@ -9,7 +9,7 @@ import com.la.radar.comport.driver.UsbSerialConstant;
 import com.la.radar.comport.driver.UsbSerialDriver;
 import com.la.radar.comport.driver.UsbSerialPort;
 import com.la.radar.endpoint.base.EndpointRadarBase;
-import com.la.radar.endpoint.targetdetection.DspSetting;
+import com.la.radar.endpoint.targetdetection.DspConfig;
 import com.la.radar.endpoint.targetdetection.EndpointTargetDetection;
 import com.la.radar.endpoint.zero.EndpointZero;
 import com.la.radar.protocol.Command;
@@ -52,9 +52,6 @@ public class RadarManager {
         }
     };
 
-
-
-
     public RadarManager(Context context) {
         this.context = context;
 
@@ -69,7 +66,7 @@ public class RadarManager {
         return mRadar;
     }
 
-    public void registerListener(RadarDataListener listener, RadarConfig[] configs) {
+    public void registerListener(RadarDataListener listener, RadarConfig... configs) {
         mEventListener = new RadarEventListener(mRadar, listener);
         connect();
 
@@ -79,13 +76,9 @@ public class RadarManager {
         mScheduler.start();
 
         // radar configuration
-        sendConfig(configs);
+        setConfigRequest(configs);
     }
 
-    public void registerListener(RadarDataListener listener, RadarConfig config) {
-        RadarConfig[] configs = {config};
-        registerListener(listener, configs);
-    }
 
     public void unregisterListener(RadarDataListener listener) {
         //
@@ -98,20 +91,26 @@ public class RadarManager {
         disconnect();
     }
 
-    public void sendConfig(RadarConfig config) {
+    public void setConfigRequest(RadarConfig config) {
+        if (config == null) return;
         mRadar.stageConfig(config);
         switch (config.getConfigType()) {
             case RadarConfig.TYPE_DSP_SETTINGS:
-                mEpTargetDetect.setDspSettings((DspSetting)config); break;
+                mEpTargetDetect.setDspSettings((DspConfig)config); break;
             default: break;
         }
 
     }
 
-    public void sendConfig(RadarConfig[] configs) {
+    public void setConfigRequest(RadarConfig[] configs) {
         for (RadarConfig config: configs) {
-            sendConfig(config);
+            setConfigRequest(config);
         }
+    }
+
+    private void getConfigRequest() {
+        Command cmd = new Command(mEpTargetDetect, mEpTargetDetect.getDspSettings());
+        mMsgPipe.addCommand(cmd);
     }
 
     //TODO try to throw some errors
@@ -185,8 +184,5 @@ public class RadarManager {
                 mMsgPipe.addCommand(cmd);
             }
         });
-        Log.e(TAG, "getTargetsRepeat() entered.");
-
-
     }
 }
