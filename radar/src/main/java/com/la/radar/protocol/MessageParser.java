@@ -3,6 +3,7 @@ package com.la.radar.protocol;
 import com.la.radar.RadarEvent;
 import com.la.radar.RadarEventListener;
 import com.la.radar.RadarManager;
+import com.la.radar.comport.util.HexDump;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -32,8 +33,9 @@ public class MessageParser extends Thread {
                     RadarEvent event = new RadarEvent();
                     if (cmd.msg.payload != null) {
                         cmd.ep.parsePayload(cmd.msg.payload, event);
+                    } else {
+                        cmd.ep.parseStatus(cmd.msg.status, event);
                     }
-                    cmd.ep.parseStatus(cmd.msg.status, event);
                     mListener.onEventOccurred(event);
                 }
             }

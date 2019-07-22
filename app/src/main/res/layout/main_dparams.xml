@@ -17,25 +17,40 @@
             android:layout_height="100dp"
             android:layout_weight="1"
             android:padding="10dp" />
+
         <LinearLayout
             android:id="@+id/btn_panel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:orientation="horizontal">
+
             <Button
                 android:id="@+id/btn_run"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="#EFEFEF"
+                android:layout_margin="8dp"
+                android:background="#D5D6D6"
+                android:fadingEdge="horizontal|vertical"
                 android:text="RUN" />
+
             <Button
                 android:id="@+id/btn_targets"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Button" />
+                android:layout_margin="8dp"
+                android:background="#D5D6D6"
+                android:text="Targets" />
+
+            <Button
+                android:id="@+id/btn_obtain"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="8dp"
+                android:background="#D5D6D6"
+                android:text="obtain" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
@@ -68,11 +83,11 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/txt_state"
+            android:id="@+id/txt_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="TextView" />
+            android:text="Status\n"/>
 
         <TextView
             android:id="@+id/txt_targets"

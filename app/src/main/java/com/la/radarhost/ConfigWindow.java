@@ -1,5 +1,6 @@
 package com.la.radarhost;
 
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,14 +20,16 @@ import com.la.radar.RadarConfigListener;
 import com.la.radar.RadarManager;
 
 public class ConfigWindow extends PopupWindow implements RadarConfigListener {
+    private final String TAG = ConfigWindow.class.getSimpleName();
     private final String[] fields;
     private final TableLayout mForm;
     private RadarConfig mConfig;
 
-    ConfigWindow(LayoutInflater inflater, final Radar radar, final RadarManager manager, final String[] fields) {
+    ConfigWindow(LayoutInflater inflater, Radar radar, final RadarManager manager, final String[] fields) {
         // -1. params initialize
         this.fields = fields;
         // 0. window initialize
+        setFocusable(true);
         setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         // 1. inflate layout

@@ -3,7 +3,6 @@ package com.la.radar;
 import android.content.Context;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
-import android.util.Log;
 
 import com.la.radar.comport.driver.UsbSerialConstant;
 import com.la.radar.comport.driver.UsbSerialDriver;
@@ -66,7 +65,8 @@ public class RadarManager {
         return mRadar;
     }
 
-    public void registerListener(RadarDataListener listener, RadarConfig... configs) {
+    public void registerListener(RadarDataListener listener, RadarConfig... configs)
+            throws NoDeviceException, IOException {
         mEventListener = new RadarEventListener(mRadar, listener);
         connect();
 
@@ -77,6 +77,7 @@ public class RadarManager {
 
         // radar configuration
         setConfigRequest(configs);
+        getConfigRequest();
     }
 
 
@@ -96,7 +97,9 @@ public class RadarManager {
         mRadar.stageConfig(config);
         switch (config.getConfigType()) {
             case RadarConfig.TYPE_DSP_SETTINGS:
-                mEpTargetDetect.setDspSettings((DspConfig)config); break;
+                Command cmd = new Command(mEpTargetDetect, mEpTargetDetect.setDspSettings((DspConfig)config));
+                mMsgPipe .addCommand(cmd);
+                break;
             default: break;
         }
 
@@ -113,8 +116,7 @@ public class RadarManager {
         mMsgPipe.addCommand(cmd);
     }
 
-    //TODO try to throw some errors
-    private boolean connect() {
+    private void connect() throws NoDeviceException, IOException {
         mUsbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
 
         // 1. search target device
@@ -129,30 +131,19 @@ public class RadarManager {
                 break;
             }
         }
-
-        if (!found) {
-            Log.e(TAG, "no device found.");
-            return false;
-        }
+        if (!found) throw new NoDeviceException();
 
         // 2. build and configure COM port
         mDriver = new UsbSerialDriver(mUsbManager, mDevice);
         int portNum = mDriver.requestPort();
         mPort = mDriver.getPort(portNum);
-        try {
-            mPort.open();
-            mPort.setParameters(
-                    UsbSerialConstant.BAUDRATE_115200,
-                    UsbSerialConstant.DATABITS_8,
-                    UsbSerialConstant.STOPBITS_1,
-                    UsbSerialConstant.PARITY_NONE
-            );
-        } catch (IOException e) {
-            Log.e(TAG, "COM port open failed.");
-            return false;
-        }
-
-        return true;
+        mPort.open();
+        mPort.setParameters(
+                UsbSerialConstant.BAUDRATE_115200,
+                UsbSerialConstant.DATABITS_8,
+                UsbSerialConstant.STOPBITS_1,
+                UsbSerialConstant.PARITY_NONE
+        );
     }
 
     public void disconnect() {
@@ -160,12 +151,16 @@ public class RadarManager {
         mDriver.releasePort(mPort.getPortNumber());
     }
 
-    public void trigger() {
-        Command cmd = new Command(mEpBase, mEpBase.setAutomaticFrameTrigger(100000));
+    public void trigger(long intervalMicros) {
+        Command cmd = new Command(mEpBase, mEpBase.setAutomaticFrameTrigger(intervalMicros));
         mMsgPipe.addCommand(cmd);
     }
 
-    private void untrigger() {
+    public void trigger() {
+        trigger(100000); //100000us = 100ms = 10Hz????
+    }
+
+    public void untrigger() {
         Command cmd = new Command(mEpBase, mEpBase.setAutomaticFrameTrigger(0));
         mMsgPipe.addCommand(cmd);
     }
@@ -176,13 +171,17 @@ public class RadarManager {
     }
 
     public void getTargetsRepeat(int interval) {
-        mScheduler.setInterval(interval);
-        mScheduler.addCommand(new Runnable() {
-            @Override
-            public void run() {
-                Command cmd = new Command(mEpTargetDetect, mEpTargetDetect.getTargets());
-                mMsgPipe.addCommand(cmd);
-            }
-        });
+        if (interval > 0 && !mScheduler.exists(CommandScheduler.INDEX_TARGETS)) {
+            mScheduler.setInterval(interval);
+            mScheduler.setCommand(CommandScheduler.INDEX_TARGETS, new Runnable() {
+                @Override
+                public void run() {
+                    Command cmd = new Command(mEpTargetDetect, mEpTargetDetect.getTargets());
+                    mMsgPipe.addCommand(cmd);
+                }
+            });
+        } else {
+            mScheduler.removeCommand(CommandScheduler.INDEX_TARGETS);
+        }
     }
 }

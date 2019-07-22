@@ -1,8 +1,13 @@
 package com.la.radar;
 
+import android.util.Log;
+
+import com.la.radar.endpoint.StatusCode;
+
 import static com.la.radar.RadarManager.RADARDATA_ERROR_TIMEOUT;
 
 public class RadarEventListener {
+    private final String TAG = RadarEventListener.class.getSimpleName();
 
     private Radar mRadar;
     private RadarDataListener mDataListener;
@@ -22,7 +27,7 @@ public class RadarEventListener {
             } else {
                 mRadar.unstageConfig();
             }
-            mDataListener.onDataChanged((RadarData)event);
+            mDataListener.onDataChanged(event.statusCode);
         } else {
             switch (event.type) {
                 case RadarEvent.TYPE_GET_DSP_SETTINGS:

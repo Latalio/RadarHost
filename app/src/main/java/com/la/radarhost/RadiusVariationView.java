@@ -94,28 +94,28 @@ public class RadiusVariationView extends View {
         int left = getLeft();
         int right = getRight();
         StringBuilder s = new StringBuilder();
-        s.append("top: ");
-        s.append(top);
-        s.append(" bottom: ");
-        s.append(bottom);
-        s.append(" left: ");
-        s.append(left);
-        s.append(" right: ");
-        s.append(right);
-        Log.d(TAG, s.toString());
+//        s.append("top: ");
+//        s.append(top);
+//        s.append(" bottom: ");
+//        s.append(bottom);
+//        s.append(" left: ");
+//        s.append(left);
+//        s.append(" right: ");
+//        s.append(right);
+//        Log.d(TAG, s.toString());
 
         // size
         int width = getWidth();
         int height = getHeight();
         int padding = getPaddingLeft();
-        s = new StringBuilder();
-        s.append("width: ");
-        s.append(width);
-        s.append(" height: ");
-        s.append(height);
-        s.append(" padding: ");
-        s.append(padding);
-        Log.d(TAG, s.toString());
+//        s = new StringBuilder();
+//        s.append("width: ");
+//        s.append(width);
+//        s.append(" height: ");
+//        s.append(height);
+//        s.append(" padding: ");
+//        s.append(padding);
+//        Log.d(TAG, s.toString());
 
         // common variables
         float sx; // startX
@@ -127,7 +127,7 @@ public class RadiusVariationView extends View {
 
 
         // draw axis/inner block border
-         drawBorder(canvas);
+        drawBorder(canvas);
         // draw points
         drawCycles(canvas);
         // draw lines

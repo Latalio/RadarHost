@@ -1,7 +1,9 @@
 package com.la.radar.endpoint.targetdetection;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 
+@Data
 @AllArgsConstructor
 public class Target {
         int targetID;           /**< An unique ID of that target. */

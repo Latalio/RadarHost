@@ -1,9 +1,12 @@
 package com.la.radar;
 
+import com.la.radar.endpoint.StatusCode;
+
 public class RadarEvent {
     public int type;
     public Object obj;
     public boolean status;
+    public StatusCode statusCode;
 
 
     public RadarEvent(int type) {

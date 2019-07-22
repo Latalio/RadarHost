@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.la.radarhost">
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -9,17 +10,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <receiver android:name="com.la.radarhost.DevAttachedReceiver">
-            <intent-filter>
-                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-            </intent-filter>
+        <!--<receiver android:name="com.la.radarhost.DevAttachedReceiver">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />-->
+            <!--</intent-filter>-->
 
-            <meta-data
-                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-                android:resource="@xml/dev_filter" />
-        </receiver>
+            <!--<meta-data-->
+                <!--android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"-->
+                <!--android:resource="@xml/dev_filter" />-->
+        <!--</receiver>-->
 
-        <activity android:name="com.la.radarhost.NoDevActivity"></activity>
+        <!--<activity android:name="com.la.radarhost.NoDevActivity"></activity>-->
         <activity android:name="com.la.radarhost.ConsoleActivity">
 
             <!-- <activity android:name=".MainActivity"> -->

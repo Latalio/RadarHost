@@ -5,15 +5,19 @@ import java.util.List;
 
 public class CommandScheduler extends Thread {
 
-    private List<Runnable> cmdList = new ArrayList<>();
+    private final int LENGTH_CMD_LIST = 4;
+    private Runnable[] cmdList = new Runnable[LENGTH_CMD_LIST];
+
     private int interval = 1000; // default 1Hz
     private boolean terminate = false;
+
+    public static final int INDEX_TARGETS = 1;
 
     @Override
     public void run() {
         for(;!terminate;) {
             for(Runnable r : cmdList) {
-                r.run();
+                if (r != null) r.run();
             }
 
             try {
@@ -28,11 +32,17 @@ public class CommandScheduler extends Thread {
         this.interval = interval;
     }
 
-    public synchronized void addCommand(Runnable r) {
-        cmdList.add(r);
+    public synchronized void setCommand(int index, Runnable r) {
+        cmdList[index] = r;
     }
 
-    // todo how to remove a Runnable command
+    public boolean exists(int index) {
+        return (index < LENGTH_CMD_LIST) && (cmdList[index] != null);
+    }
+
+    public void removeCommand(int index) {
+        cmdList[index] = null;
+    }
 
     public void terminate() {
         terminate = true;

@@ -30,6 +30,13 @@ public class Protocol {
     public static void writePayload(byte[] payload, byte cmd) {
         payload[0] = cmd;
     }
+    public static void writePayload(byte[] payload, int offset, short cmd) {
+        payload[offset]   = (byte) cmd;
+    }
+    public static void writePayload(byte[] payload, int offset, int cmd) {
+        payload[offset]   = (byte) cmd;
+        payload[offset+1] = (byte) (cmd>>8);
+    }
     public static void writePayload(byte[] payload, int offset, long cmd) {
         payload[offset]   = (byte) cmd;
         payload[offset+1] = (byte) (cmd>>8);

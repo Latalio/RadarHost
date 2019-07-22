@@ -1,11 +1,14 @@
 package com.la.radar;
 
+import android.util.Log;
+
 import com.la.radar.endpoint.targetdetection.DspConfig;
 
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class Radar {
+    private final String TAG = Radar.class.getSimpleName();
 
     // need a staged area
     private Queue<RadarConfig> stagedConfigQueue = new LinkedList<>();
@@ -25,7 +28,9 @@ public class Radar {
     void updateConfig(RadarConfig config) {
         switch (config.getConfigType()) {
             case RadarConfig.TYPE_DSP_SETTINGS:
-                dspConfig = (DspConfig)config; break;
+                Log.e(TAG, "TYPE_DSP_SETTINGS");
+                dspConfig = (DspConfig)config;
+                Log.e(TAG, dspConfig.toString()); break;
             default: break;
         }
     }

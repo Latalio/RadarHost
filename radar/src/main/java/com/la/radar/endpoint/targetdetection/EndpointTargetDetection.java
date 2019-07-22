@@ -1,10 +1,14 @@
 package com.la.radar.endpoint.targetdetection;
 
+import android.util.Log;
+
 import com.la.radar.RadarEvent;
+import com.la.radar.comport.util.HexDump;
 import com.la.radar.endpoint.Endpoint;
 import com.la.radar.protocol.Protocol;
 
 public class EndpointTargetDetection extends Endpoint {
+    String TAG = "EPTD";
     /**
      * Command Codes
      * Each payload payload of the target detection ep starts with one of these command codes.
@@ -72,6 +76,8 @@ public class EndpointTargetDetection extends Endpoint {
     }
 
     private void parseDspSettings(byte[] payload, RadarEvent event) {
+        Log.d(TAG, HexDump.toHexString(payload));
+
         short range_mvg_avg_length;
         int min_range_cm;
         int max_range_cm;
@@ -159,12 +165,12 @@ public class EndpointTargetDetection extends Endpoint {
     public byte[] setDspSettings(DspConfig settings) {
         byte[] cmd = new byte[27];
 
-        Protocol.writePayload(cmd,MSG_GET_DSP_SETTINGS);
+        Protocol.writePayload(cmd,MSG_SET_DSP_SETTINGS);
         Protocol.writePayload(cmd,1,settings.range_mvg_avg_length);
         Protocol.writePayload(cmd,2,settings.min_range_cm);
         Protocol.writePayload(cmd,4,settings.max_range_cm);
         Protocol.writePayload(cmd,6,settings.min_speed_kmh);
-        Protocol.writePayload(cmd,8,settings.max_range_cm);
+        Protocol.writePayload(cmd,8,settings.max_speed_kmh);
         Protocol.writePayload(cmd,10,settings.min_angle_degree);
         Protocol.writePayload(cmd,12,settings.max_angle_degree);
         Protocol.writePayload(cmd,14,settings.range_threshold);
@@ -177,6 +183,7 @@ public class EndpointTargetDetection extends Endpoint {
         Protocol.writePayload(cmd,24,settings.mti_filter_length);
         Protocol.writePayload(cmd,26,settings.range_thresh_type);
 
+        Log.d(TAG, HexDump.toHexString(cmd));
         return wrapCommand(cmd);
     }
 

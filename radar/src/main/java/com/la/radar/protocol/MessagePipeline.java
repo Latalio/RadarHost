@@ -5,6 +5,7 @@ import android.util.Log;
 import com.la.radar.RadarEventListener;
 import com.la.radar.RadarManager;
 import com.la.radar.comport.driver.UsbSerialPort;
+import com.la.radar.comport.util.HexDump;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -86,6 +87,7 @@ public class MessagePipeline extends Thread{
                 int recvLen = mPort.read(mReadBuffer, 100); // 10ms also OK.
 
                 mCheckBuffer.put(mReadBuffer,0,recvLen);
+//                Log.e(TAG, "Check buffer length: " + mCheckBuffer.length());
                 if (checkMessage(mCheckBuffer.array(), currCmd.ep.epNum)) break;
             } catch (IOException e) {
                 Log.d(TAG, "OPER Read failed.");
@@ -110,18 +112,20 @@ public class MessagePipeline extends Thread{
     }
 
     private boolean checkMessage(byte[] msgBytes, int epNum) {
+//        Log.e(TAG, "check buffer mar: "+ mCheckBuffer.length());
+//        Log.e(TAG, HexDump.toHexString(Arrays.copyOf(mCheckBuffer.array(), mCheckBuffer.length())));
         switch (mCheckState) {
             case HEADER:
-                if (msgBytes[0] == Protocol.CNST_STARTBYTE_DATA &&
-                msgBytes[1] == (byte) epNum) {
-                    checkLength =  (msgBytes[2] | msgBytes[3]<<8) + 4+2+4; //msg HEADER + msg TAIL + status
+                if (msgBytes[0] == Protocol.CNST_STARTBYTE_DATA && msgBytes[1] == (byte) epNum) {
+                                                                    // the number of endpoint cannot more than 128, or error occurs
+                                                                    // the same below
+                    checkLength =  ((msgBytes[2]&0xFF) | (msgBytes[3]&0xFF)<<8) + 4 + 2 + 4; //msg HEADER + msg TAIL + status
+                                                                    // Addition(+) and subtraction(-) priority is higher than shift(<< >>) operation
                     mCheckState = CheckState.LENGTH;
-                } else if (msgBytes[0] == Protocol.CNST_STARTBYTE_STATUS &&
-                        msgBytes[1] == (byte) epNum && mCheckBuffer.length() == 4){
+                }
+                else if (msgBytes[0] == Protocol.CNST_STARTBYTE_STATUS && msgBytes[1] == (byte) epNum && mCheckBuffer.length() == 4){
                     // Type 1: status message
-                    currCmd.msg = new Message(
-                            Arrays.copyOfRange(msgBytes,mCheckBuffer.length()-2,mCheckBuffer.length())
-                    );
+                    currCmd.msg = new Message(Arrays.copyOfRange(msgBytes,mCheckBuffer.length()-2, mCheckBuffer.length()));
                     mParser.addCommand(currCmd);
                     return true;
                 } else {
@@ -130,7 +134,6 @@ public class MessagePipeline extends Thread{
             case LENGTH:
                 if (mCheckBuffer.length() >= checkLength) {
                     mCheckState = CheckState.TAIL;
-                    Log.d("TAG", "LENGTH pass");
                 } else {
                     break;
                 }
@@ -144,7 +147,7 @@ public class MessagePipeline extends Thread{
                     // Type 2: payload message
                     currCmd.msg = new Message(
                             Arrays.copyOfRange(msgBytes,4,checkLength-6),   // msgTail(2)+status(4)=6;
-                            Arrays.copyOfRange(msgBytes,checkLength-4,checkLength)
+                            Arrays.copyOfRange(msgBytes,checkLength-2,checkLength)
                     );
                     mParser.addCommand(currCmd);
                     mCheckState = CheckState.HEADER; // reset check process

@@ -1,11 +1,14 @@
 package com.la.radar.endpoint;
 
+import android.util.Log;
+
 import com.la.radar.RadarEvent;
 import com.la.radar.protocol.Protocol;
 
 import java.io.ByteArrayOutputStream;
 
 public abstract class Endpoint {
+    private final String TAG = Endpoint.class.getSimpleName();
     /**< The type of the ep. */
     public int epNum;
     public long type;
@@ -44,9 +47,8 @@ public abstract class Endpoint {
     }
 
     public void parseStatus(byte[] status, RadarEvent event) {
-        StatusCode statusCode = new StatusCode((short)(status[1]<<8|status[0]));
-        event.obj = statusCode;
-        event.status = statusCode.status_code == Endpoint.STATUS_SUCCESS;
+        event.statusCode = new StatusCode((short)(status[1]<<8|status[0]));
+        event.status = event.statusCode.status_code == Endpoint.STATUS_SUCCESS;
     }
 
 

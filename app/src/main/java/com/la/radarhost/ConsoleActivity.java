@@ -3,7 +3,8 @@ package com.la.radarhost;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,10 +12,21 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.la.radar.NoDeviceException;
 import com.la.radar.Radar;
 import com.la.radar.RadarData;
 import com.la.radar.RadarDataListener;
 import com.la.radar.RadarManager;
+import com.la.radar.endpoint.StatusCode;
+import com.la.radar.endpoint.targetdetection.Target;
+import com.la.radar.endpoint.targetdetection.Targets;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import lombok.Getter;
 
 
 public class ConsoleActivity extends AppCompatActivity implements RadarDataListener {
@@ -22,15 +34,18 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
 
     //todo extend the general Text to a specific one
     // view-about
-    private TextView mTxtState;
+    TextView mTxtStatus;
     private TextView mTxtTargets;
-    private Button mBtnRun;
+    private Button mBtnTrigger;
     private Button mBtnTargets;
     private RadiusVariationView mViewRadius;
     private LayoutInflater mInflater;
     private ViewGroup mContentview;
 
     private Button mBtnDsp;
+    private Button mBtnObtain;
+
+    private static MessageHandler mHandler;
 
 
     // radar-about
@@ -56,6 +71,21 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
             "mti_filter_length"
     };
 
+    private int colorBtnActivated;
+    private int colorBtnInactivated;
+
+    static final int MSG_TOAST_SUCCESS_STATUS = 11;
+    static final int MSG_TOAST_ERROR_STATUS = 12;
+    static final int MSG_STATUS_TEXT = 13;
+
+    @Getter private Target[] targets;
+
+    public static final String PATH = "/sdcard/RadarHost";
+    public static final String PATH_DATA = PATH + "/data";
+    private static final SimpleDateFormat statusDateFormat = new SimpleDateFormat("[hh:mm:ss.SSS] ");
+
+    private TaskObtainRadarData mTaskRadarData;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,27 +95,46 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
         mInflater = getLayoutInflater();
         mContentview = findViewById(R.id.rootlayout);
 
-        mBtnRun = findViewById(R.id.btn_run);
+        mBtnTrigger = findViewById(R.id.btn_run);
         mBtnTargets = findViewById(R.id.btn_targets);
-        mTxtState = findViewById(R.id.txt_state);
+        mTxtStatus = findViewById(R.id.txt_status);
         mTxtTargets = findViewById(R.id.txt_targets);
         mViewRadius = findViewById(R.id.view_radius);
 
         mBtnDsp = findViewById(R.id.btn_dsp);
-        mBtnDsp.setOnClickListener(new BtnDspListener());
+        mBtnObtain = findViewById(R.id.btn_obtain);
 
-        mBtnRun.setOnClickListener(new BtnRunListener());
+        mBtnDsp.setOnClickListener(new BtnDspListener());
+        mBtnObtain.setOnClickListener(new BtnObtainListener());
+
+        mBtnTrigger.setOnClickListener(new BtnTriggerListener());
         mBtnTargets.setOnClickListener(new BtnTargetsListener());
 
         mRadarManager = new RadarManager(this);
         mRadar = mRadarManager.getRadarInstance();
+
+        colorBtnActivated = getResources().getColor(R.color.btnActivated);
+        colorBtnInactivated = getResources().getColor(R.color.btnInactivated);
+
+        mHandler = new MessageHandler(this);
+        checkDirs();
+
+        mTaskRadarData = new TaskObtainRadarData(this);
+        mTaskRadarData.start();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mRadarManager.registerListener(this);
-
+        try {
+            mRadarManager.registerListener(this);
+        } catch (NoDeviceException e1) {
+            //TODO do something when the device don't plug in
+            error("No device found!");
+        } catch (IOException e2) {
+            //TODO do something when the COM port got some troubles
+            error("COM port got some errors");
+        }
     }
 
     @Override
@@ -96,13 +145,30 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
 
     @Override
     public void onDataChanged(RadarData data) {
-        Log.e(TAG, "new event occur");
-//        switch (data.getDataType()) {
-//
-//                break;
-//            default:
-//                break;
-//        }
+        switch (data.getDataType()) {
+            case RadarData.TYPE_TARGETS:
+                targets = ((Targets)data).getTargets();
+                if (targets.length != 0) {
+                    float radius = targets[0].getRadius();
+                    mViewRadius.update(radius/50);
+                }
+                break;
+            case RadarData.TYPE_STATUS_CODE:
+                StatusCode statusCode = (StatusCode)data;
+                if (statusCode.getStatus_code() == StatusCode.SUCCESS) {
+                    Message msg = Message.obtain();
+                    msg.what = MSG_TOAST_SUCCESS_STATUS;
+                    mHandler.sendMessage(msg);
+                } else {
+                    Message msg = Message.obtain();
+                    msg.what = MSG_TOAST_ERROR_STATUS;
+                    msg.arg1 = statusCode.getStatus_code();
+                    mHandler.sendMessage(msg);
+                }
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
@@ -111,17 +177,21 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
 
     }
 
-    private class BtnRunListener implements View.OnClickListener {
+    @Override
+    public void setRequestedOrientation(int requestedOrientation){
+    }
+
+    private class BtnTriggerListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            if (mBtnRun.isActivated()) {
-                Log.e(TAG, "<runBtn onClick> finish");
-                mBtnRun.setActivated(false);
-                mBtnRun.setText("Run");
+            if (mBtnTrigger.isActivated()) {
+                mRadarManager.untrigger();
+                mBtnTrigger.setActivated(false);
+                mBtnTrigger.setBackgroundColor(colorBtnInactivated);
             } else {
-                Log.e(TAG, "<runBtn onClick> start");
-                mBtnRun.setActivated(true);
-                mBtnRun.setText("Running");
+                mRadarManager.trigger();
+                mBtnTrigger.setActivated(true);
+                mBtnTrigger.setBackgroundColor(colorBtnActivated);
             }
         }
     }
@@ -130,14 +200,34 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
         @Override
         public void onClick(View v) {
             if (mBtnTargets.isActivated()) {
-                Log.e(TAG, "<btnTarget onClick> inactivated");
-//                mSensor.finish();
+                mRadarManager.getTargetsRepeat(0);
                 mBtnTargets.setActivated(false);
-//                mBtnTargets.setText("Run");
+                mBtnTargets.setBackgroundColor(colorBtnInactivated);
             } else {
-                Log.e(TAG, "<btnTarget onClick> activated");
+                mRadarManager.getTargetsRepeat(100);
                 mBtnTargets.setActivated(true);
-//                mBtnTargets.setText("Running");
+                mBtnTargets.setBackgroundColor(colorBtnActivated);
+            }
+        }
+    }
+
+    private class BtnObtainListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            if (mBtnObtain.isActivated()) {
+                mTaskRadarData.enableFinish();
+                mBtnObtain.setActivated(false);
+                mBtnObtain.setBackgroundColor(colorBtnInactivated);
+            } else {
+                if (mBtnTrigger.isActivated() && mBtnTargets.isActivated()) {
+                    mTaskRadarData.setFrequency(20);
+                    mTaskRadarData.enableStart();
+                    mBtnObtain.setActivated(true);
+                    mBtnObtain.setBackgroundColor(colorBtnActivated);
+                } else {
+                    ConsoleActivity.error("Radar is not activated！");
+                }
+
             }
         }
     }
@@ -147,6 +237,35 @@ public class ConsoleActivity extends AppCompatActivity implements RadarDataListe
         public void onClick(View v) {
             new ConfigWindow(mInflater, mRadar, mRadarManager, FIELDS_DSP_CONFIG).show(mContentview);
         }
+    }
+
+    static synchronized void info(String msg) {
+        msg = String.format("<font color=\"#00FF00\">%s<br>",statusDateFormat.format(new Date()) + msg);
+        Message message = Message.obtain();
+        message.what = ConsoleActivity.MSG_STATUS_TEXT;
+        message.obj = msg;
+        mHandler.sendMessage(message);
+    }
+
+    static synchronized void error(String msg) {
+        msg = String.format("<font color=\"#FF0000\">%s<br>",statusDateFormat.format(new Date()) + msg);
+        Message message = Message.obtain();
+        message.what = ConsoleActivity.MSG_STATUS_TEXT;
+        message.obj = msg;
+        mHandler.sendMessage(message);
+    }
+
+    private void checkDirs() {
+        if (!checkDir(new File(PATH))) {
+            ConsoleActivity.error("Root directory creation failed!");
+        }
+        if (!checkDir(new File(PATH_DATA))) {
+            ConsoleActivity.error("Data directory creation failed!");
+        }
+    }
+
+    private boolean checkDir(File file) {
+        return file.exists() || file.mkdir();
     }
 }
 
